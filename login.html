@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In – Forkcast</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+</head>
+<body>
+<canvas id="rainbow-canvas"></canvas>
+
+<div class="app-wrap">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <nav class="sidebar-nav">
+      <!-- Dynamically filled by main.js -->
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-logo">
+          <img src="ForkCast.jpeg" alt="ForkCast Logo">
+          <span class="logo-text"><span class="fork">Fork</span><span class="cast">Cast</span></span>
+        </div>
+      </div>
+      <!-- Search is hidden on login/signup by css often, or just not present -->
+      <div class="topbar-right"></div>
+    </header>
+
+    <div class="auth-container">
+      <div class="auth-card glass fade-up">
+        <div class="auth-header">
+          <h1 id="auth-title">Welcome Back</h1>
+          <p id="auth-subtitle">Log in to access your personalized meal plans</p>
+        </div>
+
+        <div class="auth-tabs">
+          <div class="auth-tab active" id="tab-login">Sign In</div>
+          <div class="auth-tab" id="tab-signup">Create Account</div>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form class="auth-form active" id="login-form">
+          <div class="input-group">
+            <label>Email Address</label>
+            <input type="email" id="login-email" placeholder="hello@example.com" required />
+          </div>
+          <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="login-pass" placeholder="••••••••" required />
+          </div>
+          <button type="submit" class="btn-primary auth-btn">Sign In</button>
+          <div class="auth-footer">
+            Don't have an account? <a href="#" id="go-to-signup">Sign up now</a>
+          </div>
+        </form>
+
+        <!-- SIGNUP FORM -->
+        <form class="auth-form" id="signup-form">
+          <div class="input-group">
+            <label>Full Name</label>
+            <input type="text" id="signup-name" placeholder="John Doe" required />
+          </div>
+          <div class="input-group">
+            <label>Email Address</label>
+            <input type="email" id="signup-email" placeholder="hello@example.com" required />
+          </div>
+          <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="signup-pass" placeholder="••••••••" required />
+          </div>
+          <button type="submit" class="btn-primary auth-btn">Create Account</button>
+          <div class="auth-footer">
+            Already have an account? <a href="#" id="go-to-login">Sign in</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="main.js"></script>
+<script>
+  const tabLogin = document.getElementById('tab-login');
+  const tabSignup = document.getElementById('tab-signup');
+  const loginForm = document.getElementById('login-form');
+  const signupForm = document.getElementById('signup-form');
+  const authTitle = document.getElementById('auth-title');
+  const authSubtitle = document.getElementById('auth-subtitle');
+
+  function showLogin() {
+    tabLogin.classList.add('active');
+    tabSignup.classList.remove('active');
+    loginForm.classList.add('active');
+    signupForm.classList.remove('active');
+    authTitle.innerText = 'Welcome Back';
+    authSubtitle.innerText = 'Log in to access your personalized meal plans';
+  }
+
+  function showSignup() {
+    tabSignup.classList.add('active');
+    tabLogin.classList.remove('active');
+    signupForm.classList.add('active');
+    loginForm.classList.remove('active');
+    authTitle.innerText = 'Join Forkcast';
+    authSubtitle.innerText = 'Start your journey to aesthetic & healthy eating';
+  }
+
+  tabLogin.addEventListener('click', showLogin);
+  tabSignup.addEventListener('click', showSignup);
+  document.getElementById('go-to-signup').addEventListener('click', (e) => { e.preventDefault(); showSignup(); });
+  document.getElementById('go-to-login').addEventListener('click', (e) => { e.preventDefault(); showLogin(); });
+
+  // Handle Login
+  loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    // Dummy user
+    Auth.setUser({
+      name: email.split('@')[0],
+      email: email,
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
+      joined: new Date().toLocaleDateString()
+    });
+    window.location.href = 'home.html';
+  });
+
+  // Handle Signup
+  signupForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('signup-name').value;
+    const email = document.getElementById('signup-email').value;
+    Auth.setUser({
+      name: name,
+      email: email,
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
+      joined: new Date().toLocaleDateString()
+    });
+    window.location.href = 'home.html';
+  });
+</script>
+</body>
+</html>

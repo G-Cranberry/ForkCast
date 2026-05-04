@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weekly Planner – Forkcast</title>
+  <meta name="description" content="Plan your entire week's meals with diet-specific suggestions on Forkcast." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<canvas id="rainbow-canvas"></canvas>
+<div class="app-wrap">
+  <!-- SIDEBAR (Toggleable) -->
+  <aside class="sidebar" id="sidebar">
+    <nav class="sidebar-nav">
+      <!-- Dynamically filled by main.js -->
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-logo">
+          <img src="ForkCast.jpeg" alt="ForkCast Logo">
+          <span class="logo-text"><span class="fork">Fork</span><span class="cast">Cast</span></span>
+        </div>
+      </div>
+
+      <div class="search-bar-wrap">
+        <input type="text" id="global-search-input" placeholder="Enter ingredients..." />
+        <div class="search-actions">
+          <span id="voice-search-btn" class="search-action-btn" title="Voice Search">🎤</span>
+          <span id="scan-search-btn" class="search-action-btn" title="Scan Ingredients">📷</span>
+        </div>
+        <button class="search-btn" id="global-search-btn">Search</button>
+      </div>
+
+      <div class="topbar-right"></div>
+    </header>
+
+    <div class="page-content fade-up">
+      <div class="planner-header">
+        <h1><span class="grad">Weekly Planner</span> 📅</h1>
+        <p>Plan your meals for the whole week. Click any cell to add or change a meal.</p>
+      </div>
+
+      <div class="planner-controls glass">
+        <label for="diet-select">🥗 Diet Preference:
+          <select id="diet-select">
+            <option value="general">General</option>
+            <option value="vegan">Vegan 🌿</option>
+            <option value="vegetarian">Vegetarian 🥦</option>
+            <option value="keto">Keto 🥩</option>
+            <option value="non-veg">Non-Veg 🍗</option>
+          </select>
+        </label>
+        <button class="btn-primary" onclick="autoFill()">✨ Auto-fill Suggestions</button>
+        <button class="btn-secondary" onclick="clearAll()">🗑️ Clear All</button>
+      </div>
+
+      <div class="planner-table-wrap glass" style="margin-top:1.5rem;">
+        <table class="planner-table" id="planner-table">
+          <thead>
+            <tr>
+              <th>📆 Day</th>
+              <th>🌅 Breakfast</th>
+              <th>☀️ Lunch</th>
+              <th>🌙 Dinner</th>
+            </tr>
+          </thead>
+          <tbody id="planner-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="recipes-data.js"></script>
+<script src="main.js"></script>
+<script>
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const MEALS = ['breakfast','lunch','dinner'];
+
+const DIET_SUGGESTIONS = {
+  general: {
+    breakfast: ['Masala Omelette','Aloo Paratha','Toast & Eggs','Pancakes','Poha'],
+    lunch:     ['Rajma Rice','Paneer Wrap','Pasta Salad','Dal Chawal','Veggie Sandwich'],
+    dinner:    ['Paneer Butter Masala','Aloo Gobi','Palak Dal','Vegetable Pulao','Roti Sabzi']
+  },
+  vegan: {
+    breakfast: ['Smoothie Bowl','Oatmeal','Avocado Toast','Banana Pancakes','Fruit Salad'],
+    lunch:     ['Quinoa Salad','Onion Salad','Tofu Rice Bowl','Veggie Wrap','Aloo Gobi'],
+    dinner:    ['Lentil Soup','Tomato Rice','Vegan Curry','Saag Aloo','Dal Tadka']
+  },
+  vegetarian: {
+    breakfast: ['Masala Omelette','Onion Bhaji','Berry Smoothie','Paneer Paratha','Dosa'],
+    lunch:     ['Paneer Tikka Sandwich','Kadai Paneer Wrap','Cheese Pasta','Veggie Biryani','Raita Bowl'],
+    dinner:    ['Shahi Paneer','Palak Paneer','Kadai Paneer','Paneer Butter Masala','Veg Korma']
+  },
+  keto: {
+    breakfast: ['Eggs & Avocado','Keto Omelette','Cream Cheese Pancakes','Smoked Salmon','Greek Yogurt'],
+    lunch:     ['Chicken Salad','Zucchini Noodles','Caesar Salad','Grilled Paneer','Tuna Bowl'],
+    dinner:    ['Steak & Broccoli','Butter Chicken (no rice)','Salmon Fillet','Keto Chicken Curry','Egg Bhurji']
+  },
+  'non-veg': {
+    breakfast: ['Egg Fried Rice','Masala Omelette','Chicken Sandwich','Egg Bhurji','Bacon & Eggs'],
+    lunch:     ['Chicken Salad','Butter Chicken Bowl','Egg Rice','Keema Paratha','Fish Tacos'],
+    dinner:    ['Chicken Biryani','Butter Chicken','Mutton Curry','Fish Curry','Tandoori Chicken']
+  }
+};
+
+// Load from localStorage or init empty
+let plannerData = JSON.parse(localStorage.getItem('forkcast_planner') || '{}');
+// plannerData[day][meal] = { label, recipeId }
+
+function save() {
+  localStorage.setItem('forkcast_planner', JSON.stringify(plannerData));
+}
+
+function getRecipeForMeal(diet, meal) {
+  const opts = DIET_SUGGESTIONS[diet][meal];
+  return opts[Math.floor(Math.random() * opts.length)];
+}
+
+function render() {
+  const tbody = document.getElementById('planner-body');
+  tbody.innerHTML = DAYS.map(day => `
+    <tr>
+      <td class="day-cell">${day}</td>
+      ${MEALS.map(meal => {
+        const key = `${day}_${meal}`;
+        const val = plannerData[key];
+        if (val) {
+          return `<td>
+            <div class="meal-slot filled" onclick="clickSlot('${day}','${meal}','${key}')">
+              ${val}
+              <button class="slot-edit" title="Edit" onclick="event.stopPropagation();editSlot('${day}','${meal}','${key}')">✎</button>
+            </div>
+          </td>`;
+        }
+        return `<td>
+          <div class="meal-slot empty" onclick="editSlot('${day}','${meal}','${key}')">+ Add</div>
+        </td>`;
+      }).join('')}
+    </tr>
+  `).join('');
+}
+
+function clickSlot(day, meal, key) {
+  const val = plannerData[key];
+  if (val) {
+    const results = searchRecipes(val);
+    if (results.length > 0) {
+      window.location.href = `recipe-detail.html?id=${results[0].id}`;
+    } else {
+      window.location.href = `search.html?q=${encodeURIComponent(val)}`;
+    }
+  }
+}
+
+function editSlot(day, meal, key) {
+  const current = plannerData[key] || '';
+  const input = prompt(`What would you like for ${meal} on ${day}?`, current);
+  if (input !== null) {
+    if (input.trim() === '') {
+      delete plannerData[key];
+    } else {
+      plannerData[key] = input.trim();
+    }
+    save();
+    render();
+  }
+}
+
+function autoFill() {
+  const diet = document.getElementById('diet-select').value;
+  if (!confirm(`Auto-fill all empty slots with ${diet} suggestions?`)) return;
+  DAYS.forEach(day => {
+    MEALS.forEach(meal => {
+      const key = `${day}_${meal}`;
+      if (!plannerData[key]) {
+        plannerData[key] = getRecipeForMeal(diet, meal);
+      }
+    });
+  });
+  save(); render();
+}
+
+function clearAll() {
+  if (!confirm('Clear all meal slots?')) return;
+  plannerData = {};
+  save(); render();
+}
+
+render();
+</script>
+</body>
+</html>

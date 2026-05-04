@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Profile – Forkcast</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+</head>
+<div class="profile-bg"></div>
+
+<div class="app-wrap">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <nav class="sidebar-nav">
+      <!-- Dynamically filled by main.js -->
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-logo">
+          <img src="ForkCast.jpeg" alt="ForkCast Logo">
+          <span class="logo-text"><span class="fork">Fork</span><span class="cast">Cast</span></span>
+        </div>
+      </div>
+      <div class="topbar-right"></div>
+    </header>
+
+    <div class="page-content fade-up">
+      <div class="profile-page-content">
+        <div class="profile-header">
+          <div class="profile-avatar-wrap">
+            <img src="" alt="User Avatar" class="profile-avatar" id="user-avatar" />
+            <div class="avatar-edit" title="Change Photo">📷</div>
+            <input type="file" id="avatar-upload" style="display:none" accept="image/*" />
+          </div>
+          <div class="profile-info">
+            <h1 id="user-name">User Name</h1>
+            <p id="user-email">user@example.com</p>
+            <div style="display:flex; gap:0.5rem;">
+              <span class="tag" style="background:#e0f2fe; color:#0369a1;">Pro Member</span>
+              <span class="tag" id="user-joined">Joined Oct 2023</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-stats">
+          <div class="stat-card glass">
+            <span class="stat-val">24</span>
+            <span class="stat-label">Recipes Cooked</span>
+          </div>
+          <div class="stat-card glass">
+            <span class="stat-val">12</span>
+            <span class="stat-label">Favorites</span>
+          </div>
+          <div class="stat-card glass">
+            <span class="stat-val">5</span>
+            <span class="stat-label">Meal Plans</span>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <section>
+            <h2 class="sec-title">Recent Activity 🕒</h2>
+            <div class="meal-history">
+              <div class="history-item">
+                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100" class="history-img" alt="Meal" />
+                <div class="history-info">
+                  <h4>Grilled Salmon Salad</h4>
+                  <span>Cooked 2 days ago</span>
+                </div>
+              </div>
+              <div class="history-item">
+                <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100" class="history-img" alt="Meal" />
+                <div class="history-info">
+                  <h4>Avocado Toast</h4>
+                  <span>Breakfast · Yesterday</span>
+                </div>
+              </div>
+              <div class="history-item">
+                <img src="https://images.unsplash.com/photo-1512058564366-18510be2db19?w=100" class="history-img" alt="Meal" />
+                <div class="history-info">
+                  <h4>Detox Green Smoothie</h4>
+                  <span>Cooked 4 hours ago</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside>
+            <h2 class="sec-title">Preferences ⚙️</h2>
+            <div class="glass" style="padding:1.5rem;">
+              <div class="input-group" style="margin-bottom:1rem;">
+                <label>Dietary Goal</label>
+              <div class="input-group" style="margin-bottom:1rem;">
+                <label>Dietary Goal</label>
+                <select class="cat-select" id="pref-diet" style="width:100%; margin-left:0;">
+                  <option value="Vegetarian">Vegetarian</option>
+                  <option value="Vegan">Vegan</option>
+                  <option value="Keto">Keto</option>
+                  <option value="Low Carb">Low Carb</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label>Daily Calorie Target</label>
+                <input type="number" id="pref-calories" value="2200" class="add-input" style="width:100%; min-width:unset;" />
+              </div>
+              <button class="btn-primary" id="save-profile-btn" style="width:100%; margin-top:1.5rem;">Save Changes</button>
+            </div>
+          </aside>
+        </div>
+      </div><!-- end profile-page-content -->
+    </div>
+  </main>
+</div>
+
+<script src="main.js"></script>
+<script>
+  // Redirect if not logged in
+  if (!Auth.isLoggedIn()) {
+    window.location.href = 'login.html';
+  }
+
+  const user = Auth.getUser();
+  if (user) {
+    document.getElementById('user-name').innerText = user.name;
+    document.getElementById('user-email').innerText = user.email;
+    document.getElementById('user-avatar').src = user.avatar;
+    document.getElementById('user-joined').innerText = `Joined ${user.joined}`;
+    
+    // Fill preferences
+    if (user.dietGoal) document.getElementById('pref-diet').value = user.dietGoal;
+    if (user.calorieTarget) document.getElementById('pref-calories').value = user.calorieTarget;
+  }
+
+  // Toast Function
+  function showToast(msg) {
+    let toast = document.querySelector('.toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'toast';
+      document.body.appendChild(toast);
+    }
+    toast.innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // Avatar Edit (File Picker)
+  const avatarEditBtn = document.querySelector('.avatar-edit');
+  const avatarInput = document.getElementById('avatar-upload');
+
+  avatarEditBtn.addEventListener('click', () => {
+    avatarInput.click();
+  });
+
+  avatarInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target.result;
+        user.avatar = dataUrl;
+        Auth.setUser(user);
+        document.getElementById('user-avatar').src = dataUrl;
+        showToast('Avatar updated! ✨');
+        
+        // Update topbar if present
+        const topAvatar = document.querySelector('.profile-icon-link img');
+        if (topAvatar) topAvatar.src = dataUrl;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Save Changes
+  document.getElementById('save-profile-btn').addEventListener('click', () => {
+    user.dietGoal = document.getElementById('pref-diet').value;
+    user.calorieTarget = document.getElementById('pref-calories').value;
+    Auth.setUser(user);
+    showToast('Changes saved successfully! ✨');
+  });
+</script>
+</body>
+</html>

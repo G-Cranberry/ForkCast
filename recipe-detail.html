@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recipe – Forkcast</title>
+  <meta name="description" content="Full recipe details with ingredients, steps and video guide." />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .detail-body { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+    @media (max-width: 700px) { .detail-body { grid-template-columns: 1fr; } }
+    .section-box { padding: 2rem; }
+    .section-box h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.2rem; color: var(--accent2); }
+    .ingredient-item {
+      display: flex; align-items: center; gap: 0.8rem;
+      padding: 0.6rem 0.8rem; background: var(--bg2); border-radius: 10px;
+      margin-bottom: 0.5rem; font-size: 0.98rem;
+    }
+    .ingredient-emoji { font-size: 1.1rem; }
+    .step-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+      margin-bottom: 1rem; padding: 0.8rem; background: white;
+      border-radius: 12px; border-left: 4px solid var(--accent);
+      font-size: 0.97rem;
+    }
+    .step-num {
+      background: var(--accent); color: white;
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.85rem; flex-shrink: 0;
+    }
+    .detail-meta { display: flex; gap: 1.5rem; margin: 1rem 0; flex-wrap: wrap; }
+    .meta-chip {
+      background: var(--bg2); color: var(--accent2); border-radius: 20px;
+      padding: 0.4rem 1rem; font-weight: 700; font-size: 0.88rem;
+    }
+    .yt-hint {
+      background: linear-gradient(135deg, #ff5c7c, #c084fc);
+      border-radius: 16px; padding: 2rem; color: white; text-align: center;
+    }
+    .yt-hint h3 { color: white; margin-bottom: 0.5rem; }
+    .yt-hint p { opacity: 0.9; margin-bottom: 1rem; font-size: 0.95rem; }
+    .yt-btn {
+      display: inline-block; background: white; color: #ff5c7c;
+      padding: 0.7rem 2rem; border-radius: 30px; font-weight: 800;
+      font-size: 0.95rem; transition: transform 0.2s;
+    }
+    .yt-btn:hover { transform: scale(1.05); }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-weight: 700; margin-bottom: 1.5rem; cursor: pointer; transition: color 0.2s; }
+    .back-link:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+<canvas id="rainbow-canvas"></canvas>
+<div class="app-wrap">
+  <!-- SIDEBAR (Toggleable) -->
+  <aside class="sidebar" id="sidebar">
+    <nav class="sidebar-nav">
+      <!-- Dynamically filled by main.js -->
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-logo">
+          <img src="ForkCast.jpeg" alt="ForkCast Logo">
+          <span class="logo-text"><span class="fork">Fork</span><span class="cast">Cast</span></span>
+        </div>
+      </div>
+
+      <div class="search-bar-wrap">
+        <input type="text" id="global-search-input" placeholder="Enter ingredients..." />
+        <button class="search-btn" id="global-search-btn">Search</button>
+      </div>
+
+      <div class="topbar-right"></div>
+    </header>
+
+    <div class="page-content fade-up detail-page">
+      <div class="back-link" onclick="history.back()">← Back to Recipes</div>
+      <div id="detail-content">
+        <p style="color:var(--muted);">Loading recipe...</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="recipes-data.js"></script>
+<script src="main.js"></script>
+<script>
+const urlParams = new URLSearchParams(location.search);
+const recipeId = urlParams.get('id');
+
+// Find recipe in DB
+let recipe = null;
+for (const list of Object.values(RECIPES_DB)) {
+  recipe = list.find(r => r.id === recipeId);
+  if (recipe) break;
+}
+
+const container = document.getElementById('detail-content');
+
+if (!recipe) {
+  container.innerHTML = `
+    <div class="glass" style="padding:3rem;text-align:center;">
+      <h2 style="font-size:2rem;margin-bottom:1rem;">😕 Recipe not found</h2>
+      <p style="color:var(--muted);margin-bottom:2rem;">Try searching for an ingredient instead.</p>
+      <a href="search.html" class="btn-primary">Go to Smart Search</a>
+    </div>`;
+} else {
+  document.title = `${recipe.title} – Forkcast`;
+
+  // Build YouTube search link
+  const ytQuery = encodeURIComponent(`${recipe.title} recipe`);
+  const ytLink = `https://www.youtube.com/results?search_query=${ytQuery}`;
+
+  container.innerHTML = `
+    <!-- Hero Image -->
+    <div style="border-radius:24px;overflow:hidden;height:340px;margin-bottom:2rem;position:relative;">
+      <img src="${recipe.img}" alt="${recipe.title}" style="width:100%;height:100%;object-fit:cover;"
+        onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700'">
+      <div style="position:absolute;bottom:0;left:0;right:0;padding:1.5rem 2rem;background:linear-gradient(0deg,rgba(0,0,0,0.6),transparent);color:white;">
+        <h1 style="font-size:2.3rem;font-weight:900;">${recipe.title}</h1>
+      </div>
+    </div>
+
+    <!-- Meta Chips -->
+    <div class="detail-meta">
+      <span class="meta-chip">⏱️ ${recipe.time}</span>
+      <span class="meta-chip">🍽️ ${recipe.category.charAt(0).toUpperCase()+recipe.category.slice(1)}</span>
+      <span class="meta-chip">🥗 ${recipe.diet}</span>
+    </div>
+
+    <p style="color:var(--muted);font-size:1.05rem;margin-bottom:2rem;">${recipe.desc}</p>
+
+    <div class="detail-body">
+      <!-- Ingredients -->
+      <div class="glass section-box">
+        <h3>🧺 Ingredients</h3>
+        ${recipe.ingredients.map(ing => `
+          <div class="ingredient-item">
+            <span class="ingredient-emoji">🔸</span>
+            ${ing}
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- Steps -->
+      <div class="glass section-box">
+        <h3>👨‍🍳 Instructions</h3>
+        ${recipe.steps.map((step, i) => `
+          <div class="step-item">
+            <span class="step-num">${i+1}</span>
+            <span>${step}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Video -->
+    <div class="yt-hint glass" style="margin-top:2rem;background:linear-gradient(135deg,#ff8fa3,#c084fc);">
+      <h3>🎬 Watch Video Recipe</h3>
+      <p>Watch a step-by-step video tutorial for this recipe on YouTube.</p>
+      <a href="${ytLink}" target="_blank" class="yt-btn">▶ Watch on YouTube</a>
+    </div>
+
+    <!-- More Suggestions -->
+    <div style="margin-top:3rem;">
+      <h2 class="sec-title">You might also like 💡</h2>
+      <div id="similar-grid" class="recipe-grid"></div>
+    </div>
+  `;
+
+  // Show similar recipes from same category
+  const similar = ALL_RECIPES.filter(r => r.category === recipe.category && r.id !== recipe.id).slice(0, 4);
+  renderRecipeCards(similar, 'similar-grid');
+}
+</script>
+</body>
+</html>

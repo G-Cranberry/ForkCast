@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forkcast – Your Meal Planner & Recipe Hub</title>
+  <meta name="description" content="Discover beautiful recipes, plan your weekly meals, search by ingredients and manage your grocery list with Forkcast." />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+</head>
+<body>
+<canvas id="rainbow-canvas"></canvas>
+
+<div class="app-wrap">
+  <!-- SIDEBAR (Toggleable) -->
+  <aside class="sidebar" id="sidebar">
+    <nav class="sidebar-nav">
+      <!-- Dynamically filled by main.js -->
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-logo">
+          <img src="ForkCast.jpeg" alt="ForkCast Logo">
+          <span class="logo-text"><span class="fork">Fork</span><span class="cast">Cast</span></span>
+        </div>
+      </div>
+
+      <div class="search-bar-wrap">
+        <input type="text" id="global-search-input" placeholder="Enter ingredients..." />
+        <div class="search-actions">
+          <span id="voice-search-btn" class="search-action-btn" title="Voice Search">🎤</span>
+          <span id="scan-search-btn" class="search-action-btn" title="Scan Ingredients">📷</span>
+        </div>
+        <button class="search-btn" id="global-search-btn">Search</button>
+      </div>
+
+      <div class="topbar-right"></div>
+    </header>
+
+    <!-- PAGE -->
+    <div class="page-content fade-up">
+
+      <!-- HERO -->
+      <section class="hero glass" style="margin-bottom:2.5rem;">
+        <h1><span class="grad">ForkCast</span> Your Next Meal 🍴</h1>
+        <p>Plan, discover and cook aesthetic pastel-perfect recipes tailored to your diet and lifestyle.</p>
+        <a href="recipes.html" class="btn-primary">Explore Recipes</a>
+      </section>
+
+      <!-- MEAL TYPES -->
+      <h2 class="sec-title">Meal Types</h2>
+      <div class="meal-cats" style="margin-bottom:3rem;">
+        <div class="meal-cat-card" onclick="location.href='recipes.html?cat=breakfast'">
+          <img src="https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=600" alt="Breakfast" />
+          <div class="meal-cat-label">🌅 Breakfast</div>
+        </div>
+        <div class="meal-cat-card" onclick="location.href='recipes.html?cat=lunch'">
+          <img src="https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600" alt="Lunch" />
+          <div class="meal-cat-label">☀️ Lunch</div>
+        </div>
+        <div class="meal-cat-card" onclick="location.href='recipes.html?cat=dinner'">
+          <img src="https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=600" alt="Dinner" />
+          <div class="meal-cat-label">🌙 Dinner</div>
+        </div>
+      </div>
+
+      <!-- TODAY'S FORKCAST -->
+      <h2 class="sec-title">Today's Forkcast ✨</h2>
+      <div class="glass featured-row" style="padding:2rem; margin-bottom:3rem;">
+        <img class="featured-img" src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=700" alt="Featured Recipe" />
+        <div class="featured-info">
+          <h3>Paneer Butter Masala</h3>
+          <p>Rich, creamy tomato-butter sauce filled with soft cubes of paneer. The dish that started a thousand love stories with Indian cuisine.</p>
+          <a href="recipe-detail.html?id=pn2" class="btn-primary">View Recipe</a>
+        </div>
+      </div>
+
+      <!-- POPULAR SEARCHES -->
+      <h2 class="sec-title">Quick Ingredient Search 🥘</h2>
+      <div class="quick-tags" style="justify-content:flex-start; margin-bottom:2rem;">
+        <span class="quick-tag" onclick="location.href='search.html?q=onion'">🧅 Onion</span>
+        <span class="quick-tag" onclick="location.href='search.html?q=paneer'">🧀 Paneer</span>
+        <span class="quick-tag" onclick="location.href='search.html?q=potato'">🥔 Potato</span>
+        <span class="quick-tag" onclick="location.href='search.html?q=tomato'">🍅 Tomato</span>
+        <span class="quick-tag" onclick="location.href='search.html?q=spinach'">🥬 Spinach</span>
+        <span class="quick-tag" onclick="location.href='search.html?q=egg'">🥚 Egg</span>
+        <span class="quick-tag" onclick="location.href='search.html?q=chicken'">🍗 Chicken</span>
+        <span class="quick-tag" onclick="location.href='search.html?q=apple'">🍎 Apple</span>
+      </div>
+
+      <!-- RECENT RECIPES -->
+      <h2 class="sec-title">Popular Recipes 🔥</h2>
+      <div id="home-recipe-grid" class="recipe-grid"></div>
+
+    </div><!-- end page-content -->
+  </main>
+</div>
+
+<script src="recipes-data.js"></script>
+<script src="main.js"></script>
+<script>
+  // Render a random selection from all recipes
+  const featured = ALL_RECIPES.slice(0, 8);
+  renderRecipeCards(featured, 'home-recipe-grid');
+</script>
+</body>
+</html>
