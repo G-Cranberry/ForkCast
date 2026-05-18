@@ -1,88 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Recipes – Forkcast</title>
   <meta name="description" content="Browse breakfast, lunch and dinner recipes on Forkcast." />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=1.1" />
 </head>
+
 <body>
-<canvas id="rainbow-canvas"></canvas>
-<div class="app-wrap">
-  <!-- SIDEBAR (Toggleable) -->
-  <aside class="sidebar" id="sidebar">
-    <nav class="sidebar-nav">
-      <!-- Dynamically filled by main.js -->
-    </nav>
-  </aside>
+  <canvas id="rainbow-canvas"></canvas>
+  <div class="app-wrap">
+    <!-- SIDEBAR (Toggleable) -->
+    <aside class="sidebar" id="sidebar">
+      <nav class="sidebar-nav">
+        <!-- Dynamically filled by main.js -->
+      </nav>
+    </aside>
 
-  <!-- MAIN -->
-  <main class="main">
-    <!-- TOPBAR -->
-    <header class="topbar">
-      <div class="topbar-left">
-        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
-          <span></span><span></span><span></span>
-        </button>
-        <div class="topbar-logo">
-          <img src="ForkCast.jpeg" alt="ForkCast Logo">
-          <span class="logo-text"><span class="fork">Fork</span><span class="cast">Cast</span></span>
+    <!-- MAIN -->
+    <main class="main">
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
+            <span></span><span></span><span></span>
+          </button>
+          <div class="topbar-logo">
+            <img src="ForkCast.jpeg" alt="ForkCast Logo">
+            <span class="logo-text"><span class="fork">Fork</span><span class="cast">Cast</span></span>
+          </div>
+        </div>
+
+        <div class="search-bar-wrap">
+          <input type="text" id="global-search-input" placeholder="Enter ingredients..." />
+          <div class="search-actions">
+            <span id="voice-search-btn" class="search-action-btn" title="Voice Search">🎤</span>
+            <span id="scan-search-btn" class="search-action-btn" title="Scan Ingredients">📷</span>
+          </div>
+          <button class="search-btn" id="global-search-btn">Search</button>
+        </div>
+
+        <div class="topbar-right"></div>
+      </header>
+
+      <div class="page-content fade-up">
+        <div class="recipes-page-header">
+          <h1><span class="grad">Recipes</span> 🍴</h1>
+          <p>Explore our hand-picked collection of beautiful recipes across every meal.</p>
+        </div>
+
+        <!-- TABS -->
+        <div class="meal-tabs" id="meal-tabs">
+          <button class="meal-tab active" data-cat="all">All</button>
+          <button class="meal-tab" data-cat="breakfast">🌅 Breakfast</button>
+          <button class="meal-tab" data-cat="lunch">☀️ Lunch</button>
+          <button class="meal-tab" data-cat="dinner">🌙 Dinner</button>
+        </div>
+
+        <div id="recipes-grid" class="recipe-grid"></div>
+        <div id="load-more-wrap" style="text-align:center; margin-top:2rem; display:none;">
+          <button id="load-more-btn" class="btn-secondary">Load More Recipes</button>
         </div>
       </div>
+    </main>
+  </div>
 
-      <div class="search-bar-wrap">
-        <input type="text" id="global-search-input" placeholder="Enter ingredients..." />
-        <div class="search-actions">
-          <span id="voice-search-btn" class="search-action-btn" title="Voice Search">🎤</span>
-          <span id="scan-search-btn" class="search-action-btn" title="Scan Ingredients">📷</span>
-        </div>
-        <button class="search-btn" id="global-search-btn">Search</button>
-      </div>
+  <script src="recipes-data.js"></script>
+  <script src="main.js"></script>
+  <script>
+    // Read URL param ?cat=
+    const urlParams = new URLSearchParams(location.search);
+    let activeCat = urlParams.get('cat') || 'all';
+    let visibleCount = 12;
 
-      <div class="topbar-right"></div>
-    </header>
+    function setActiveTab(cat) {
+      activeCat = cat;
+      visibleCount = 12; // Reset on tab change
+      document.querySelectorAll('.meal-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.cat === cat);
+      });
+      render();
+    }
 
-    <div class="page-content fade-up">
-      <div class="recipes-page-header">
-        <h1><span class="grad">Recipes</span> 🍴</h1>
-        <p>Explore our hand-picked collection of beautiful recipes across every meal.</p>
-      </div>
+    function render() {
+      const fullList = activeCat === 'all' ? ALL_RECIPES : ALL_RECIPES.filter(r => r.category === activeCat);
+      const visibleList = fullList.slice(0, visibleCount);
 
-      <!-- TABS -->
-      <div class="meal-tabs" id="meal-tabs">
-        <button class="meal-tab active" data-cat="all">All</button>
-        <button class="meal-tab" data-cat="breakfast">🌅 Breakfast</button>
-        <button class="meal-tab" data-cat="lunch">☀️ Lunch</button>
-        <button class="meal-tab" data-cat="dinner">🌙 Dinner</button>
-      </div>
+      renderRecipeCards(visibleList, 'recipes-grid');
 
-      <div id="recipes-grid" class="recipe-grid"></div>
-    </div>
-  </main>
-</div>
+      const loadMoreWrap = document.getElementById('load-more-wrap');
+      if (fullList.length > visibleCount) {
+        loadMoreWrap.style.display = 'block';
+      } else {
+        loadMoreWrap.style.display = 'none';
+      }
+    }
 
-<script src="recipes-data.js"></script>
-<script src="main.js"></script>
-<script>
-  // Read URL param ?cat=
-  const urlParams = new URLSearchParams(location.search);
-  let activeCat = urlParams.get('cat') || 'all';
-
-  function setActiveTab(cat) {
-    activeCat = cat;
-    document.querySelectorAll('.meal-tab').forEach(t => {
-      t.classList.toggle('active', t.dataset.cat === cat);
+    document.getElementById('meal-tabs').addEventListener('click', e => {
+      if (e.target.classList.contains('meal-tab')) setActiveTab(e.target.dataset.cat);
     });
-    const list = cat === 'all' ? ALL_RECIPES : ALL_RECIPES.filter(r => r.category === cat);
-    renderRecipeCards(list, 'recipes-grid');
-  }
 
-  document.getElementById('meal-tabs').addEventListener('click', e => {
-    if (e.target.classList.contains('meal-tab')) setActiveTab(e.target.dataset.cat);
-  });
+    document.getElementById('load-more-btn').addEventListener('click', () => {
+      visibleCount += 12;
+      render();
+    });
 
-  setActiveTab(activeCat);
-</script>
+    setActiveTab(activeCat);
+  </script>
 </body>
+
 </html>

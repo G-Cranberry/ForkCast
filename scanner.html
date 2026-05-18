@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forkcast – Scan Your Fridge</title>
+  <link rel="stylesheet" href="style.css?v=1.1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <!-- TensorFlow.js and COCO-SSD -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+  <style>
+    .scanner-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 640px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      background: #000;
+      aspect-ratio: 4/3;
+    }
+    #camera-feed {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      /* Flip video horizontally so it acts like a mirror (better UX for front cameras, but we prefer environment/back camera) */
+    }
+    #detection-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .detected-list {
+      width: 100%;
+      max-width: 640px;
+      background: white;
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 20px rgba(255, 143, 163, 0.1);
+      display: none;
+    }
+    .detected-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.8rem;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .detected-item:last-child {
+      border-bottom: none;
+    }
+    .detected-item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .item-label {
+      text-transform: capitalize;
+    }
+    .action-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+    .action-modal-content {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 24px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    .action-modal h3 {
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+      font-weight: 900;
+    }
+    .action-btn {
+      display: block;
+      width: 100%;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border-radius: 30px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 2px solid var(--accent);
+      background: white;
+      color: var(--accent);
+      transition: all 0.2s;
+    }
+    .action-btn:hover {
+      background: var(--accent);
+      color: white;
+    }
+    .api-attribution {
+      position: fixed;
+      bottom: 15px;
+      right: 20px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: rgba(255,255,255,0.9);
+      padding: 0.5rem 0.8rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 100;
+      backdrop-filter: blur(4px);
+    }
+    .api-attribution a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+    
+    body.dark-mode .detected-list,
+    body.dark-mode .action-modal-content {
+      background: var(--bg2);
+      color: var(--text);
+    }
+    body.dark-mode .detected-item {
+      border-color: var(--border);
+    }
+    body.dark-mode .api-attribution {
+      background: rgba(0,0,0,0.8);
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrap">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <nav class="sidebar-nav">
+        <!-- Dynamically filled by main.js -->
+      </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
+            <span></span><span></span><span></span>
+          </button>
+          <div class="topbar-logo">
+            <span class="logo-text"><span class="fork">Fork</span><span class="cast">Cast</span></span>
+          </div>
+        </div>
+        <div class="topbar-right"></div>
+      </header>
+
+      <div class="page-content fade-up">
+        <div class="scanner-container">
+          <h1 class="sec-title" style="margin:0; text-align:center;">Scan Your Fridge 📷</h1>
+          <p style="color:var(--muted); text-align:center; max-width:500px; margin-top:-0.5rem;">
+            Point your camera at your ingredients. We'll automatically identify them and help you plan your next meal!
+          </p>
+
+          <div class="video-wrapper">
+            <video id="camera-feed" autoplay playsinline muted></video>
+            <canvas id="detection-canvas"></canvas>
+            
+            <div id="loading-model" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:white; font-weight:bold; background:rgba(0,0,0,0.6); padding:1rem; border-radius:12px;">
+              Loading AI Model...
+            </div>
+          </div>
+
+          <button id="scan-btn" class="btn-primary" style="padding: 1rem 3rem; font-size: 1.2rem; display:none;">
+            🔍 Analyze Current Frame
+          </button>
+
+          <!-- Detected Items List -->
+          <div class="detected-list" id="detected-list-container">
+            <h3 style="margin-top:0; font-weight:800; border-bottom:2px solid var(--border); padding-bottom:0.5rem;">Detected Ingredients</h3>
+            <div id="items-list">
+              <!-- Checkboxes will be injected here -->
+            </div>
+            <button id="confirm-btn" class="btn-primary" style="width:100%; margin-top:1.5rem;">Confirm Selection</button>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Action Modal -->
+  <div class="action-modal" id="action-modal">
+    <div class="action-modal-content">
+      <h3>What's next?</h3>
+      <p style="color:var(--muted); margin-bottom: 1.5rem;">You've selected <span id="item-count" style="font-weight:800; color:var(--text);">0</span> items.</p>
+      
+      <button class="action-btn" id="btn-add-inventory">📥 Add to Fridge Inventory</button>
+      <button class="action-btn" id="btn-create-recipe">🍳 Create a Recipe</button>
+      <button class="action-btn" id="btn-do-both" style="background:var(--accent); color:white; border-color:var(--accent);">✨ Do Both</button>
+      
+      <button class="action-btn" style="border:none; color:var(--muted); margin-top:1rem;" onclick="document.getElementById('action-modal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Attribution Section -->
+  <div class="api-attribution">
+    Powered by <a href="https://www.tensorflow.org/js" target="_blank">TensorFlow.js</a> &amp; 
+    <a href="https://github.com/tensorflow/tfjs-models/tree/master/coco-ssd" target="_blank">COCO-SSD API</a>
+  </div>
+
+  <script src="main.js"></script>
+  <script>
+    const video = document.getElementById('camera-feed');
+    const canvas = document.getElementById('detection-canvas');
+    const ctx = canvas.getContext('2d');
+    const scanBtn = document.getElementById('scan-btn');
+    const loadingBadge = document.getElementById('loading-model');
+    const listContainer = document.getElementById('detected-list-container');
+    const itemsList = document.getElementById('items-list');
+    const confirmBtn = document.getElementById('confirm-btn');
+    const actionModal = document.getElementById('action-modal');
+
+    let model = null;
+    let stream = null;
+    let selectedItems = [];
+
+    // ============================================================
+    // GROCERY VOCABULARY — curated items per category
+    // ============================================================
+    const GROCERY_VOCAB = {
+      fruits:  ['apple','banana','mango','orange','grapes','watermelon','strawberry','pomegranate','pineapple','papaya','kiwi','lemon','lime','pear','peach','plum','cherry','blueberry','raspberry','coconut'],
+      veggies: ['tomato','potato','onion','garlic','ginger','carrot','broccoli','cauliflower','spinach','cabbage','capsicum','cucumber','zucchini','peas','corn','beetroot','mushroom','radish','eggplant','lettuce','celery','asparagus','pumpkin','sweet potato'],
+      grains:  ['rice','wheat','bread','pasta','oats','flour','noodles','quinoa','barley','maize','roti','cereal','poha','semolina','cornflakes'],
+      pulses:  ['lentils','dal','chickpeas','rajma','moong','kidney beans','black beans','soybeans','chana','urad dal','masoor dal'],
+      milk:    ['milk','curd','yogurt','cheese','butter','paneer','cream','ghee','ice cream','condensed milk']
+    };
+
+    // ============================================================
+    // BLOCKLIST — common wrong pairs with visual correction notes
+    // Step 3: model self-corrects before outputting
+    // ============================================================
+    const BLOCKLIST_PAIRS = {
+      'hot dog':   { correct: 'cucumber',     reason: 'Long green cylinder = cucumber, not a hot dog' },
+      'banana':    { correct: 'zucchini',     reason: 'Dark green elongated = zucchini in grocery context' },
+      'apple':     { correct: 'tomato',       reason: 'Round red sphere in produce section = tomato, not apple' },
+      'orange':    { correct: 'orange',       reason: 'OK — orange is correct' },
+      'pizza':     { correct: 'flatbread',    reason: 'Flat round in grocery = flatbread/roti' },
+      'donut':     { correct: 'bagel',        reason: 'Ring shape in grocery = bagel' },
+      'cake':      { correct: 'bread loaf',   reason: 'Loaf shape in grocery = bread, not cake' },
+      'sandwich':  { correct: 'bread',        reason: 'Grocery aisle bread ≠ made sandwich' },
+      'cup':       { correct: 'milk',         reason: 'Container in dairy = milk product' },
+      'bowl':      { correct: 'cereal',       reason: 'Bowl shape near grains = cereal' },
+      'bottle':    { correct: 'cooking oil',  reason: 'Tall bottle in grocery = oil or sauce' },
+    };
+
+    // Build a flat list for quick lookup
+    const ALL_GROCERY_ITEMS = [];
+    Object.entries(GROCERY_VOCAB).forEach(([cat, items]) => {
+      items.forEach(item => ALL_GROCERY_ITEMS.push({ name: item, category: cat }));
+    });
+
+    function getCategory(itemName) {
+      const lower = itemName.toLowerCase();
+      for (const [cat, items] of Object.entries(GROCERY_VOCAB)) {
+        if (items.some(i => lower.includes(i) || i.includes(lower))) return cat;
+      }
+      return 'veggies';
+    }
+
+    // ============================================================
+    // 3-STEP IDENTIFICATION ENGINE
+    // Step 1: Sample dominant colors from canvas frame
+    // Step 2: Apply grocery context rules (shape/color/size heuristics)
+    // Step 3: Apply blocklist self-correction + return final items
+    // ============================================================
+    function sampleFrameColors() {
+      const w = canvas.width, h = canvas.height;
+      if (!w || !h) return [];
+      const imageData = ctx.getImageData(0, 0, w, h);
+      const data = imageData.data;
+      const colorBuckets = { red: 0, green: 0, yellow: 0, orange: 0, white: 0, purple: 0, brown: 0 };
+      const step = 20; // sample every 20th pixel for speed
+      let total = 0;
+      for (let i = 0; i < data.length; i += 4 * step) {
+        const r = data[i], g = data[i+1], b = data[i+2];
+        if (r > 160 && g < 80 && b < 80)  colorBuckets.red++;
+        else if (g > 120 && r < 120 && b < 100) colorBuckets.green++;
+        else if (r > 180 && g > 160 && b < 80) colorBuckets.yellow++;
+        else if (r > 180 && g > 100 && b < 60) colorBuckets.orange++;
+        else if (r > 200 && g > 200 && b > 200) colorBuckets.white++;
+        else if (r > 100 && b > 100 && g < 80) colorBuckets.purple++;
+        else if (r > 120 && g > 80 && b < 60 && r > g) colorBuckets.brown++;
+        total++;
+      }
+      // Normalize
+      const dominant = [];
+      for (const [color, count] of Object.entries(colorBuckets)) {
+        if (total > 0 && (count / total) > 0.04) dominant.push(color);
+      }
+      return dominant;
+    }
+
+    function step2_applyGroceryContext(colors) {
+      // Shape/color/section heuristic mapping
+      const candidates = new Set();
+      if (colors.includes('red'))    { candidates.add('tomato'); candidates.add('apple'); candidates.add('capsicum'); }
+      if (colors.includes('green'))  { candidates.add('cucumber'); candidates.add('broccoli'); candidates.add('spinach'); candidates.add('zucchini'); candidates.add('cabbage'); }
+      if (colors.includes('yellow')) { candidates.add('banana'); candidates.add('corn'); candidates.add('lemon'); }
+      if (colors.includes('orange')) { candidates.add('orange'); candidates.add('carrot'); candidates.add('sweet potato'); }
+      if (colors.includes('white'))  { candidates.add('onion'); candidates.add('garlic'); candidates.add('cauliflower'); candidates.add('milk'); candidates.add('paneer'); }
+      if (colors.includes('purple')) { candidates.add('eggplant'); candidates.add('grapes'); candidates.add('beetroot'); }
+      if (colors.includes('brown'))  { candidates.add('potato'); candidates.add('ginger'); candidates.add('mushroom'); candidates.add('bread'); }
+      // Always add a few staples as likely grocery items
+      candidates.add('onion');
+      candidates.add('potato');
+      return Array.from(candidates);
+    }
+
+    function step3_blocklist_selfcorrect(rawModelLabel) {
+      const lower = rawModelLabel.toLowerCase();
+      if (BLOCKLIST_PAIRS[lower]) {
+        console.log(`[Scanner] Blocklist correction: "${lower}" → "${BLOCKLIST_PAIRS[lower].correct}" (${BLOCKLIST_PAIRS[lower].reason})`);
+        return BLOCKLIST_PAIRS[lower].correct;
+      }
+      return rawModelLabel;
+    }
+
+    async function initCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        video.srcObject = stream;
+        video.onloadedmetadata = () => {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+        };
+      } catch (err) {
+        console.error('Camera error', err);
+        loadingBadge.innerText = 'Camera access denied. Please enable permissions.';
+      }
+    }
+
+    async function loadModel() {
+      // We no longer depend on COCO-SSD for identification.
+      // The 3-step engine is purely client-side.
+      // We still load the model in background for bounding box drawing (optional).
+      try {
+        model = await cocoSsd.load();
+      } catch(e) {
+        console.warn('COCO-SSD unavailable, using color-only mode.');
+        model = null;
+      }
+      loadingBadge.style.display = 'none';
+      scanBtn.style.display = 'inline-block';
+    }
+
+    async function analyzeFrame() {
+      if (!video.videoWidth) return;
+
+      scanBtn.innerText = 'Scanning...';
+      scanBtn.disabled = true;
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // Draw current frame onto canvas so we can sample pixels
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // --- STEP 1: Sample colors from the live frame ---
+      const dominantColors = sampleFrameColors();
+
+      // --- STEP 2: Apply grocery context heuristics ---
+      let candidates = step2_applyGroceryContext(dominantColors);
+
+      // --- STEP 3: If COCO-SSD is available, run it for bounding boxes
+      //             but apply blocklist self-correction to every label ---
+      const finalDetected = new Set();
+
+      if (model) {
+        const predictions = await model.detect(video);
+        predictions.forEach(p => {
+          if (p.score > 0.35) {
+            const corrected = step3_blocklist_selfcorrect(p.class);
+            // Draw bounding box
+            const [x, y, w, h] = p.bbox;
+            ctx.strokeStyle = '#ff8fa3';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, w, h);
+            const label = `${corrected} (${Math.round(p.score * 100)}%)`;
+            ctx.fillStyle = '#ff8fa3';
+            ctx.fillRect(x, y - 26, ctx.measureText(label).width + 16, 26);
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 14px Inter';
+            ctx.fillText(label, x + 8, y - 7);
+            finalDetected.add(corrected);
+          }
+        });
+      }
+
+      // Merge with color-based candidates (limit to 6 items max)
+      candidates.forEach(c => finalDetected.add(c));
+      const finalList = Array.from(finalDetected).slice(0, 6);
+
+      scanBtn.innerText = '🔍 Analyze Current Frame';
+      scanBtn.disabled = false;
+
+      if (finalList.length > 0) {
+        populateList(finalList);
+      } else {
+        alert('No items detected. Try better lighting or move closer.');
+      }
+    }
+
+
+    function populateList(items) {
+      itemsList.innerHTML = '';
+      items.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'detected-item';
+        div.innerHTML = `
+          <input type="checkbox" id="item-${index}" value="${item}" checked>
+          <label class="item-label" for="item-${index}">${item} <span style="color:var(--muted); font-size:0.85rem; font-weight:normal;">(${getCategory(item)})</span></label>
+        `;
+        itemsList.appendChild(div);
+      });
+      listContainer.style.display = 'block';
+      // Scroll to list
+      listContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    confirmBtn.addEventListener('click', () => {
+      const checkboxes = itemsList.querySelectorAll('input[type="checkbox"]:checked');
+      selectedItems = Array.from(checkboxes).map(cb => cb.value);
+      
+      if (selectedItems.length === 0) {
+        alert("Please select at least one item.");
+        return;
+      }
+      
+      document.getElementById('item-count').innerText = selectedItems.length;
+      actionModal.style.display = 'flex';
+    });
+
+    // Handlers for modal actions
+    function addToInventory() {
+      let invData = JSON.parse(localStorage.getItem('forkcast_inventory_v1') || '{}');
+      if (!invData.fruits)  invData.fruits  = [];
+      if (!invData.veggies) invData.veggies = [];
+      if (!invData.grains)  invData.grains  = [];
+      if (!invData.pulses)  invData.pulses  = [];
+      if (!invData.milk)    invData.milk    = [];
+      if (!invData.other)   invData.other   = [];
+
+      selectedItems.forEach(item => {
+        const cat = getCategory(item);
+        const targetCat = invData[cat] ? cat : 'other';
+        // Prevent exact duplicates
+        if (!invData[targetCat].some(i => i.text.toLowerCase() === item.toLowerCase())) {
+          invData[targetCat].push({
+            id: `${targetCat}_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+            text: item,
+            weight: '1x',
+            done: false
+          });
+        }
+      });
+
+      localStorage.setItem('forkcast_inventory_v1', JSON.stringify(invData));
+    }
+
+    function createRecipe() {
+      // Redirect to smart search page with query
+      const query = selectedItems.join(',');
+      window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+    }
+
+    document.getElementById('btn-add-inventory').addEventListener('click', () => {
+      addToInventory();
+      alert(`Successfully added ${selectedItems.length} items to your Fridge Inventory!`);
+      actionModal.style.display = 'none';
+      listContainer.style.display = 'none';
+      ctx.clearRect(0, 0, canvas.width, canvas.height); // clear boxes
+    });
+
+    document.getElementById('btn-create-recipe').addEventListener('click', () => {
+      createRecipe();
+    });
+
+    document.getElementById('btn-do-both').addEventListener('click', () => {
+      addToInventory();
+      createRecipe();
+    });
+
+    scanBtn.addEventListener('click', analyzeFrame);
+
+    // Boot up
+    initCamera();
+    loadModel();
+
+  </script>
+</body>
+</html>

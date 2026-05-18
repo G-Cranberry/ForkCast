@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,8 +10,9 @@
       --bg-dark: #121212;
       --accent: #ff8fa3;
     }
-    
-    body, html {
+
+    body,
+    html {
       margin: 0;
       padding: 0;
       width: 100%;
@@ -45,8 +47,13 @@
     }
 
     @keyframes glowPulse {
-      0% { box-shadow: 0 0 30px rgba(255, 143, 163, 0.4); }
-      100% { box-shadow: 0 0 60px rgba(255, 143, 163, 0.8), 0 0 100px rgba(96, 165, 250, 0.3); }
+      0% {
+        box-shadow: 0 0 30px rgba(255, 143, 163, 0.4);
+      }
+
+      100% {
+        box-shadow: 0 0 60px rgba(255, 143, 163, 0.8), 0 0 100px rgba(96, 165, 250, 0.3);
+      }
     }
 
     .loading-text {
@@ -80,24 +87,51 @@
     }
 
     @keyframes logoPop {
-      0% { transform: scale(0.5); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
+      0% {
+        transform: scale(0.5);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
 
     @keyframes slideUp {
-      from { transform: translateY(20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
 
     @keyframes loading {
-      0% { left: -40%; }
-      50% { left: 100%; }
-      100% { left: -40%; }
+      0% {
+        left: -40%;
+      }
+
+      50% {
+        left: 100%;
+      }
+
+      100% {
+        left: -40%;
+      }
     }
 
     .brand-footer {
@@ -118,6 +152,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <div class="splash-container">
@@ -141,9 +176,10 @@
       document.body.style.transition = "opacity 0.5s ease";
       document.body.style.opacity = "0";
       setTimeout(() => {
-        window.location.href = 'login.html';
+        window.location.href = 'signup.html';
       }, 500);
     }, 3000);
   </script>
 </body>
+
 </html>

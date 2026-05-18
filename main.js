@@ -2,8 +2,16 @@
 // FORKCAST - SHARED JAVASCRIPT (main.js)
 // ==========================================
 
-// ---- Sidebar Toggle ----
+// ---- Theme Initialization ----
 (function() {
+  const theme = localStorage.getItem('theme');
+  if (theme === 'dark') {
+    document.body.classList.add('dark-mode');
+  }
+})();
+
+// ---- Sidebar Toggle ----
+(function () {
   const toggle = document.getElementById('menu-toggle');
   const appWrap = document.querySelector('.app-wrap');
   if (!toggle || !appWrap) return;
@@ -14,9 +22,9 @@
 
   // Close sidebar when clicking outside (optional but good UX)
   document.addEventListener('click', (e) => {
-    if (appWrap.classList.contains('menu-active') && 
-        !toggle.contains(e.target) && 
-        !document.getElementById('sidebar').contains(e.target)) {
+    if (appWrap.classList.contains('menu-active') &&
+      !toggle.contains(e.target) &&
+      !document.getElementById('sidebar').contains(e.target)) {
       appWrap.classList.remove('menu-active');
     }
   });
@@ -24,7 +32,7 @@
 
 
 // ---- Rainbow Cursor Trail ----
-(function() {
+(function () {
   const canvas = document.getElementById('rainbow-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
@@ -75,7 +83,7 @@ function updateActiveLink() {
 updateActiveLink();
 
 // ---- Global Search Bar ----
-(function() {
+(function () {
   const input = document.getElementById('global-search-input');
   const btn = document.getElementById('global-search-btn');
   if (!input || !btn) return;
@@ -94,46 +102,158 @@ updateActiveLink();
   const voiceBtn = document.getElementById('voice-search-btn');
   const scanBtn = document.getElementById('scan-search-btn');
 
+  // Voice Search Reusable Function
+  // Voice Search Reusable Function (Improved Google-like Version)
+  window.startVoiceSearch = function (inputElement, onSearchCallback) {
+
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Voice recognition is not supported in this browser.");
+      return;
+    }
+
+    // Create Voice Modal if it doesn't exist
+    let voiceOverlay = document.getElementById('voice-modal');
+
+    if (!voiceOverlay) {
+      voiceOverlay = document.createElement('div');
+      voiceOverlay.id = 'voice-modal';
+      voiceOverlay.className = 'voice-modal-overlay';
+
+      voiceOverlay.innerHTML = `
+      <div class="voice-modal-content">
+        <span class="voice-close" id="voice-close-btn">&times;</span>
+        <div class="voice-mic-icon">🎤</div>
+        <div class="voice-status" id="voice-status-text">
+          Listening...
+        </div>
+        <div class="voice-text" id="voice-text-output">
+          Speak now...
+        </div>
+      </div>
+    `;
+
+      document.body.appendChild(voiceOverlay);
+    }
+
+    const voiceTextOutput = document.getElementById('voice-text-output');
+    const voiceStatus = document.getElementById('voice-status-text');
+    const voiceCloseBtn = document.getElementById('voice-close-btn');
+
+    voiceOverlay.classList.add('active');
+
+    voiceTextOutput.textContent = "Speak now...";
+    voiceStatus.textContent = "Listening...";
+
+    const recognition = new SpeechRecognition();
+
+    // Better recognition settings
+    recognition.lang = 'en-US';
+    recognition.continuous = false; // Set to false so it stops after one phrase
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    let finalTranscript = '';
+
+    recognition.onstart = () => {
+      voiceStatus.textContent = "Listening...";
+    };
+
+    recognition.onresult = (event) => {
+
+      let interimTranscript = '';
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+
+        const transcript = event.results[i][0].transcript;
+
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + ' ';
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+
+      const combined = finalTranscript + interimTranscript;
+
+      voiceTextOutput.textContent = combined;
+
+      if (inputElement) {
+        inputElement.value = combined.trim();
+      }
+    };
+
+    recognition.onerror = (event) => {
+
+      console.error("Speech recognition error:", event.error);
+
+      switch (event.error) {
+
+        case 'not-allowed':
+          voiceStatus.textContent =
+            "Microphone permission denied";
+          break;
+
+        case 'no-speech':
+          voiceStatus.textContent =
+            "No speech detected";
+          break;
+
+        case 'audio-capture':
+          voiceStatus.textContent =
+            "Microphone not found";
+          break;
+
+        default:
+          voiceStatus.textContent =
+            "Voice recognition error";
+      }
+
+      setTimeout(() => {
+        voiceOverlay.classList.remove('active');
+      }, 2000);
+    };
+
+    recognition.onend = () => {
+
+      voiceStatus.textContent = "Processing...";
+
+      setTimeout(() => {
+
+        voiceOverlay.classList.remove('active');
+
+        if (finalTranscript.trim()) {
+
+          if (inputElement) {
+            inputElement.value = finalTranscript.trim();
+          }
+
+          if (onSearchCallback) {
+            onSearchCallback();
+          }
+        }
+
+      }, 700);
+    };
+
+    voiceCloseBtn.onclick = () => {
+      recognition.stop();
+      voiceOverlay.classList.remove('active');
+    };
+
+    recognition.start();
+  };
   if (voiceBtn) {
     voiceBtn.addEventListener('click', () => {
-      if (!('webkitSpeechRecognition' in window)) {
-        alert("Voice recognition not supported in this browser.");
-        return;
-      }
-      const recognition = new webkitSpeechRecognition();
-      recognition.lang = 'en-US';
-      recognition.start();
-      voiceBtn.style.color = 'var(--accent2)';
-      
-      recognition.onresult = (event) => {
-        const result = event.results[0][0].transcript;
-        input.value = result;
-        voiceBtn.style.color = '';
-        doSearch();
-      };
-      recognition.onerror = () => {
-        voiceBtn.style.color = '';
-      };
+      window.startVoiceSearch(input, doSearch);
     });
   }
 
   if (scanBtn) {
     scanBtn.addEventListener('click', () => {
-      const fileInput = document.createElement('input');
-      fileInput.type = 'file';
-      fileInput.accept = 'image/*';
-      fileInput.onchange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          // Simulate scanning
-          alert("Scanning ingredients from " + file.name + "...");
-          setTimeout(() => {
-            input.value = "Tomato, Onion, Paneer"; // Simulated result
-            doSearch();
-          }, 1500);
-        }
-      };
-      fileInput.click();
+      window.location.href = 'scanner.html';
     });
   }
 })();
@@ -153,7 +273,7 @@ const Auth = {
 function updateNav() {
   const nav = document.querySelector('.sidebar-nav');
   const user = Auth.getUser();
-  
+
   // 1. Sidebar update
   if (nav) {
     let navHTML = `
@@ -162,6 +282,7 @@ function updateNav() {
       <a href="planner.html" class="nav-item"><span class="nav-icon">📅</span> Weekly Planner</a>
       <a href="grocery.html" class="nav-item"><span class="nav-icon">🛒</span> Grocery List</a>
       <a href="search.html" class="nav-item"><span class="nav-icon">🔍</span> Smart Search</a>
+      <a href="scanner.html" class="nav-item"><span class="nav-icon">📷</span> Fridge Scanner</a>
     `;
 
     if (user) {
@@ -184,16 +305,37 @@ function updateNav() {
       topbar.appendChild(topRight);
     }
 
+    let authHTML = '';
     if (user) {
-      topRight.innerHTML = `
+      authHTML = `
         <a href="profile.html" class="profile-icon-link" title="View Profile">
           <img src="${user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400'}" alt="Profile">
         </a>
       `;
     } else {
-      topRight.innerHTML = `
+      authHTML = `
         <a href="login.html" class="btn-primary" style="padding: 0.5rem 1.2rem; font-size: 0.85rem;">Sign In</a>
       `;
+    }
+
+    const isDark = document.body.classList.contains('dark-mode');
+    const themeToggleHTML = `
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme" style="font-size: 1.5rem; background: none; border: none; cursor: pointer; transition: transform 0.2s;">
+        ${isDark ? '☀️' : '🌙'}
+      </button>
+    `;
+
+    topRight.innerHTML = themeToggleHTML + authHTML;
+
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const dark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('theme', dark ? 'dark' : 'light');
+        themeToggleBtn.innerHTML = dark ? '☀️' : '🌙';
+        window.dispatchEvent(new Event('themeChanged'));
+      });
     }
   }
 

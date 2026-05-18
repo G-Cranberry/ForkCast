@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in - Google Accounts</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f0f4f9;
+      font-family: 'Roboto', arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      width: 450px;
+      padding: 40px;
+      box-sizing: border-box;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      text-align: center;
+    }
+
+    .google-logo {
+      width: 75px;
+      height: 24px;
+      margin: 0 auto 16px;
+      display: block;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 400;
+      color: #202124;
+      margin: 0 0 8px 0;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: #202124;
+      margin: 0 0 24px 0;
+    }
+
+    .app-info {
+      color: #5f6368;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    .app-name {
+      color: #1a73e8;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    /* Accounts List */
+    .accounts-list {
+      display: flex;
+      flex-direction: column;
+      border-top: 1px solid #e8eaed;
+      border-bottom: 1px solid #e8eaed;
+      margin-bottom: 20px;
+      padding: 8px 0;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .account-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      text-align: left;
+    }
+
+    .account-item:hover {
+      background-color: #f8f9fa;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #ff8fa3;
+      color: #ffffff;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+      font-size: 14px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .account-details {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .account-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #3c4043;
+    }
+
+    .account-email {
+      font-size: 12px;
+      color: #5f6368;
+    }
+
+    /* Custom Account Input */
+    .custom-account-box {
+      border: 1px dashed #dadce0;
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 24px;
+      background-color: #fafafa;
+      text-align: left;
+    }
+
+    .custom-account-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #5f6368;
+      margin-bottom: 12px;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-size: 11px;
+      color: #5f6368;
+      font-weight: 500;
+    }
+
+    .form-group input {
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: #1a73e8;
+    }
+
+    .btn-submit-custom {
+      background-color: #1a73e8;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 8px;
+      transition: background-color 0.2s;
+    }
+
+    .btn-submit-custom:hover {
+      background-color: #1557b0;
+    }
+
+    /* Developer Warning Banner */
+    .dev-notice {
+      background-color: #fff9e6;
+      border: 1px solid #ffe28a;
+      border-radius: 6px;
+      padding: 14px;
+      text-align: left;
+      margin-bottom: 20px;
+      font-size: 12px;
+      line-height: 1.45;
+      color: #664d03;
+    }
+
+    .dev-notice strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #856404;
+    }
+
+    .real-oauth-link {
+      display: inline-block;
+      margin-top: 10px;
+      color: #1a73e8;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 12px;
+    }
+
+    .real-oauth-link:hover {
+      text-decoration: underline;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 24px;
+      font-size: 12px;
+      color: #5f6368;
+    }
+
+    .footer-links a {
+      color: #5f6368;
+      text-decoration: none;
+      margin-left: 12px;
+    }
+
+    .footer-links a:hover {
+      color: #202124;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Google SVG logo -->
+    <svg class="google-logo" viewBox="0 0 74 24" width="75" height="24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M7.24 14.84c-3.9 0-7.07-3.1-7.07-7.07S3.33.7 7.24.7c2.14 0 3.66.84 4.8 1.96l-1.7 1.7c-.8-.76-1.85-1.32-3.1-1.32-2.58 0-4.7 2.1-4.7 4.73s2.1 4.73 4.7 4.73c2.67 0 3.68-1.7 3.84-2.58H7.24V8h6.24c.08.33.12.73.12 1.17 0 1.9-.5 4.13-2.1 5.76-1.57 1.6-3.56 1.9-4.26 1.9zm13.92-9.74c2.8 0 4.8 2.2 4.8 4.73s-2 4.73-4.8 4.73-4.82-2.2-4.82-4.73 2.02-4.73 4.82-4.73zm0 7.36c1.5 0 2.5-1.2 2.5-2.63s-1-2.63-2.5-2.63-2.5 1.2-2.5 2.63 1 2.63 2.5 2.63zm10.7-7.36c2.8 0 4.8 2.2 4.8 4.73s-2 4.73-4.8 4.73-4.82-2.2-4.82-4.73 2.02-4.73 4.82-4.73zm0 7.36c1.5 0 2.5-1.2 2.5-2.63s-1-2.63-2.5-2.63-2.5 1.2-2.5 2.63 1 2.63 2.5 2.63zm10.75-9.3v9.04c0 3.72-2.18 5.25-4.76 5.25-2.43 0-3.9-1.63-4.45-2.95l1.98-.82c.35.84 1.2 1.83 2.47 1.83 1.6 0 2.6-.98 2.6-2.83v-.7h-.08c-.48.6-1.4 1.1-2.57 1.1-2.42 0-4.63-2.1-4.63-4.7 0-2.64 2.2-4.75 4.63-4.75 1.16 0 2.1.5 2.57 1.1h.08V.4h2.16zm-2.4 9.07c1.47 0 2.47-1.2 2.47-2.66 0-1.48-1-2.67-2.47-2.67-1.5 0-2.53 1.2-2.53 2.67 0 1.44 1 2.66 2.53 2.66zm6.33-9.1h2.16v9.33h-2.16V.3zm8.3 4.8c1.9 0 3.32.93 3.86 2.25l-4.14 1.72c-.22-.44-.73-1.34-1.9-1.34-1.2 0-2.23.95-2.45 2.24l6.63-2.73-.2-.5c-.48-1.27-1.92-3.64-4.84-3.64-2.9 0-5.32 2.27-5.32 4.73 0 2.42 2.4 4.73 5.56 4.73 2.55 0 4.02-1.56 4.64-2.47l-1.62-1.08c-.54.8-1.25 1.4-2.13 1.4-1.2 0-2.07-.63-2.43-1.62L73 5.1z" fill="#757575"/>
+    </svg>
+
+    <h1>Choose an account</h1>
+    <div class="subtitle">to continue to <span class="app-name">Forkcast</span></div>
+    
+    <div class="app-info">
+      Forkcast uses your Google account to customize your recipes and weekly meal plans.
+    </div>
+
+    <!-- Developer Notice Panel -->
+    <div class="dev-notice">
+      <strong>🔧 Forkcast Developer Console</strong>
+      Google returned `401: invalid_client`. The `GOOGLE_CLIENT_ID` in your `.env` file is either disabled or not recognized by Google. 
+      We've launched the high-fidelity simulator so you can bypass Google's block and test the application!
+      <br>
+      <a href="/auth/google-real" class="real-oauth-link">👉 Bypass Simulator & Try Real Google Connection</a>
+    </div>
+
+    <!-- Account Selection List -->
+    <div class="accounts-list">
+      <!-- Shilpa -->
+      <div class="account-item" onclick="selectAccount('Shilpa', 'shilpa@gmail.com', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100')">
+        <div class="avatar" style="background-image: url('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100');"></div>
+        <div class="account-details">
+          <span class="account-name">Shilpa</span>
+          <span class="account-email">shilpa@gmail.com</span>
+        </div>
+      </div>
+      
+      <!-- Developer -->
+      <div class="account-item" onclick="selectAccount('Forkcast Developer', 'dev@forkcast.com', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100')">
+        <div class="avatar" style="background-image: url('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100');"></div>
+        <div class="account-details">
+          <span class="account-name">Forkcast Developer</span>
+          <span class="account-email">dev@forkcast.com</span>
+        </div>
+      </div>
+
+      <!-- Guest -->
+      <div class="account-item" onclick="selectAccount('John Doe', 'john.doe@gmail.com', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100')">
+        <div class="avatar" style="background-image: url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100');"></div>
+        <div class="account-details">
+          <span class="account-name">John Doe</span>
+          <span class="account-email">john.doe@gmail.com</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Account Box -->
+    <div class="custom-account-box">
+      <div class="custom-account-title">📝 Use a different email account:</div>
+      <div class="form-group">
+        <label for="custom-name">NAME</label>
+        <input type="text" id="custom-name" placeholder="E.g., Shilpa G" value="Shilpa G">
+      </div>
+      <div class="form-group">
+        <label for="custom-email">EMAIL ADDRESS</label>
+        <input type="email" id="custom-email" placeholder="E.g., shilpa.g@example.com" value="shilpa.g@example.com">
+      </div>
+      <button class="btn-submit-custom" onclick="submitCustomAccount()">Continue with Custom Account</button>
+    </div>
+
+    <div class="footer">
+      <span>English (United States)</span>
+      <div class="footer-links">
+        <a href="#">Help</a>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function selectAccount(name, email, picture) {
+      const url = `/auth/mock-google-callback?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&picture=${encodeURIComponent(picture)}`;
+      window.location.href = url;
+    }
+
+    function submitCustomAccount() {
+      const name = document.getElementById('custom-name').value;
+      const email = document.getElementById('custom-email').value;
+      const initials = name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
+      const picture = `https://via.placeholder.com/100/ff8fa3/ffffff?text=${encodeURIComponent(initials)}`;
+      
+      selectAccount(name, email, picture);
+    }
+  </script>
+</body>
+
+</html>

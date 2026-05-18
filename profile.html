@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Your Profile – Forkcast</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=1.1" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
 </head>
 <div class="profile-bg"></div>
@@ -51,43 +52,40 @@
         </div>
 
         <div class="profile-stats">
-          <div class="stat-card glass">
-            <span class="stat-val">24</span>
+          <div class="stat-card glass" onclick="showSection('cooked')">
+            <span class="stat-val" id="count-cooked">24</span>
             <span class="stat-label">Recipes Cooked</span>
           </div>
-          <div class="stat-card glass">
-            <span class="stat-val">12</span>
+          <div class="stat-card glass" onclick="showSection('favorites')">
+            <span class="stat-val" id="count-favs">0</span>
             <span class="stat-label">Favorites</span>
           </div>
-          <div class="stat-card glass">
-            <span class="stat-val">5</span>
+          <div class="stat-card glass" onclick="location.href='planner.html'">
+            <span class="stat-val" id="count-plans">0</span>
             <span class="stat-label">Meal Plans</span>
           </div>
         </div>
 
         <div class="dashboard-grid">
-          <section>
-            <h2 class="sec-title">Recent Activity 🕒</h2>
-            <div class="meal-history">
-              <div class="history-item">
-                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100" class="history-img" alt="Meal" />
-                <div class="history-info">
-                  <h4>Grilled Salmon Salad</h4>
-                  <span>Cooked 2 days ago</span>
+          <section id="profile-dynamic-section">
+            <h2 class="sec-title" id="dynamic-title">Recent Activity 🕒</h2>
+            <div id="dynamic-content-grid">
+              <div class="meal-history">
+                <div class="history-item">
+                  <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100" class="history-img"
+                    alt="Meal" />
+                  <div class="history-info">
+                    <h4>Grilled Salmon Salad</h4>
+                    <span>Cooked 2 days ago</span>
+                  </div>
                 </div>
-              </div>
-              <div class="history-item">
-                <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100" class="history-img" alt="Meal" />
-                <div class="history-info">
-                  <h4>Avocado Toast</h4>
-                  <span>Breakfast · Yesterday</span>
-                </div>
-              </div>
-              <div class="history-item">
-                <img src="https://images.unsplash.com/photo-1512058564366-18510be2db19?w=100" class="history-img" alt="Meal" />
-                <div class="history-info">
-                  <h4>Detox Green Smoothie</h4>
-                  <span>Cooked 4 hours ago</span>
+                <div class="history-item">
+                  <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100" class="history-img"
+                    alt="Meal" />
+                  <div class="history-info">
+                    <h4>Avocado Toast</h4>
+                    <span>Breakfast · Yesterday</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -98,21 +96,23 @@
             <div class="glass" style="padding:1.5rem;">
               <div class="input-group" style="margin-bottom:1rem;">
                 <label>Dietary Goal</label>
-              <div class="input-group" style="margin-bottom:1rem;">
-                <label>Dietary Goal</label>
-                <select class="cat-select" id="pref-diet" style="width:100%; margin-left:0;">
-                  <option value="Vegetarian">Vegetarian</option>
-                  <option value="Vegan">Vegan</option>
-                  <option value="Keto">Keto</option>
-                  <option value="Low Carb">Low Carb</option>
-                </select>
+                <div class="input-group" style="margin-bottom:1rem;">
+                  <label>Dietary Goal</label>
+                  <select class="cat-select" id="pref-diet" style="width:100%; margin-left:0;">
+                    <option value="Vegetarian">Vegetarian</option>
+                    <option value="Vegan">Vegan</option>
+                    <option value="Keto">Keto</option>
+                    <option value="Low Carb">Low Carb</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label>Daily Calorie Target</label>
+                  <input type="number" id="pref-calories" value="2200" class="add-input"
+                    style="width:100%; min-width:unset;" />
+                </div>
+                <button class="btn-primary" id="save-profile-btn" style="width:100%; margin-top:1.5rem;">Save
+                  Changes</button>
               </div>
-              <div class="input-group">
-                <label>Daily Calorie Target</label>
-                <input type="number" id="pref-calories" value="2200" class="add-input" style="width:100%; min-width:unset;" />
-              </div>
-              <button class="btn-primary" id="save-profile-btn" style="width:100%; margin-top:1.5rem;">Save Changes</button>
-            </div>
           </aside>
         </div>
       </div><!-- end profile-page-content -->
@@ -120,6 +120,7 @@
   </main>
 </div>
 
+<script src="recipes-data.js"></script>
 <script src="main.js"></script>
 <script>
   // Redirect if not logged in
@@ -133,7 +134,7 @@
     document.getElementById('user-email').innerText = user.email;
     document.getElementById('user-avatar').src = user.avatar;
     document.getElementById('user-joined').innerText = `Joined ${user.joined}`;
-    
+
     // Fill preferences
     if (user.dietGoal) document.getElementById('pref-diet').value = user.dietGoal;
     if (user.calorieTarget) document.getElementById('pref-calories').value = user.calorieTarget;
@@ -170,7 +171,7 @@
         Auth.setUser(user);
         document.getElementById('user-avatar').src = dataUrl;
         showToast('Avatar updated! ✨');
-        
+
         // Update topbar if present
         const topAvatar = document.querySelector('.profile-icon-link img');
         if (topAvatar) topAvatar.src = dataUrl;
@@ -186,6 +187,68 @@
     Auth.setUser(user);
     showToast('Changes saved successfully! ✨');
   });
+
+  // Dynamic Stats & Favorites Logic
+  function updateStats() {
+    const favs = JSON.parse(localStorage.getItem('forkcast_favorites') || '[]');
+    const cooked = JSON.parse(localStorage.getItem('forkcast_cooked') || '[]');
+    const planner = JSON.parse(localStorage.getItem('forkcast_planner') || '{}');
+
+    document.getElementById('count-favs').innerText = favs.length;
+    document.getElementById('count-cooked').innerText = cooked.length;
+    document.getElementById('count-plans').innerText = Object.keys(planner).length > 0 ? 1 : 0;
+  }
+
+  function showSection(type) {
+    const titleEl = document.getElementById('dynamic-title');
+    const contentEl = document.getElementById('dynamic-content-grid');
+
+    // Clear the current content first to avoid showing old items
+    contentEl.innerHTML = '';
+
+    if (type === 'favorites') {
+      titleEl.innerText = "Your Favorites ❤️";
+      const favIds = JSON.parse(localStorage.getItem('forkcast_favorites') || '[]');
+      const favoriteRecipes = ALL_RECIPES.filter(r => favIds.includes(r.id));
+
+      if (favoriteRecipes.length === 0) {
+        contentEl.innerHTML = '<div class="glass" style="padding:3rem;text-align:center;"><p style="color:var(--muted); font-size:1.1rem;">No favorites yet. Save some recipes to see them here! 🍽️</p></div>';
+      } else {
+        contentEl.innerHTML = '<div class="recipe-grid" id="fav-grid"></div>';
+        renderRecipeCards(favoriteRecipes, 'fav-grid');
+      }
+    } else if (type === 'cooked') {
+      titleEl.innerText = "Recipes You've Cooked 🍳";
+      const cookedIds = JSON.parse(localStorage.getItem('forkcast_cooked') || '[]');
+      const cookedRecipes = ALL_RECIPES.filter(r => cookedIds.includes(r.id));
+
+      if (cookedRecipes.length === 0) {
+        contentEl.innerHTML = '<div class="glass" style="padding:3rem;text-align:center;"><p style="color:var(--muted); font-size:1.1rem;">You haven\'t marked any recipes as cooked yet! 😋</p></div>';
+      } else {
+        contentEl.innerHTML = '<div class="recipe-grid" id="cooked-grid"></div>';
+        renderRecipeCards(cookedRecipes, 'cooked-grid');
+      }
+    } else {
+      titleEl.innerText = "Recent Activity 🕒";
+      contentEl.innerHTML = `
+        <div class="meal-history">
+          <div class="history-item">
+            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100" class="history-img" alt="Meal" />
+            <div class="history-info"><h4>Grilled Salmon Salad</h4><span>Cooked 2 days ago</span></div>
+          </div>
+          <div class="history-item">
+            <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100" class="history-img" alt="Meal" />
+            <div class="history-info"><h4>Avocado Toast</h4><span>Breakfast · Yesterday</span></div>
+          </div>
+        </div>`;
+    }
+
+    // Scroll to the results section smoothly
+    document.getElementById('profile-dynamic-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  updateStats();
 </script>
 </body>
+
 </html>
