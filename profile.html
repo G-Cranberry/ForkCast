@@ -1,14 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Your Profile – Forkcast</title>
-<link rel="stylesheet" href="style.css?v=1.1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Profile – Forkcast</title>
+  <link rel="stylesheet" href="style.css?v=1.1" />
+  <style>
+    @keyframes bunnyPop {
+      from { transform: scale(0.5); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+    @keyframes bunnyBounce {
+      from { transform: translateY(0px); }
+      to   { transform: translateY(-12px); }
+    }
+    #bunny-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+    #bunny-box {
+      background: linear-gradient(135deg, #ffe4ef, #fff0f6);
+      border-radius: 32px;
+      padding: 3rem 2.5rem;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(255,143,163,0.4);
+      max-width: 340px;
+      width: 90%;
+    }
+    #bunny-box.bunny-show {
+      animation: bunnyPop 0.5s cubic-bezier(0.19,1,0.22,1) forwards;
+    }
+    #bunny-svg { animation: bunnyBounce 1s ease-in-out infinite alternate; }
+    .bunny-close-btn {
+      background: linear-gradient(135deg, #ff8fa3, #f472b6);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 0.6rem 2rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(255,143,163,0.4);
+      transition: transform 0.2s;
+      margin-top: 1rem;
+    }
+    .bunny-close-btn:hover { transform: scale(1.05); }
+  </style>
 </head>
 <body>
 <canvas id="rainbow-canvas"></canvas>
-
 <div class="app-wrap">
   <aside class="sidebar" id="sidebar">
     <nav class="sidebar-nav"></nav>
@@ -80,24 +126,22 @@
           </section>
 
           <aside>
-            <h2 class="sec-title">Preferences ⚙️</h2>
+            <h2 class="sec-title">Feedback 💬</h2>
             <div class="glass" style="padding:1.5rem;">
               <div class="input-group">
-                <label>Dietary Goal</label>
-                <select class="cat-select" id="pref-diet" style="width:100%;">
-                  <option value="Vegetarian">Vegetarian</option>
-                  <option value="Vegan">Vegan</option>
-                  <option value="Keto">Keto</option>
-                  <option value="Low Carb">Low Carb</option>
-                </select>
+                <label>Your Name</label>
+                <input type="text" id="fb-name" class="add-input" style="width:100%;min-width:unset;" placeholder="Your name" />
               </div>
               <div class="input-group">
-                <label>Daily Calorie Target</label>
-                <input type="number" id="pref-calories" value="2200" class="add-input" style="width:100%;" />
+                <label>Your Email</label>
+                <input type="email" id="fb-email" class="add-input" style="width:100%;min-width:unset;" placeholder="your@email.com" />
               </div>
-              <button class="btn-primary" id="save-profile-btn" style="width:100%;margin-top:1rem;">Save Changes</button>
-              <button class="btn-secondary" onclick="Auth.logout ? Auth.logout() : (localStorage.clear(), location.href='login.html')"
-                style="width:100%;margin-top:0.75rem;text-align:center;">Logout</button>
+              <div class="input-group">
+                <label>Message</label>
+                <textarea id="fb-message" class="add-input" rows="4" style="width:100%;min-width:unset;resize:vertical;" placeholder="Tell us what you think..."></textarea>
+              </div>
+              <button class="btn-primary" id="send-feedback-btn" style="width:100%;margin-top:0.5rem;">Send Feedback 🚀</button>
+              <p id="fb-status" style="text-align:center;margin-top:0.75rem;font-size:0.9rem;"></p>
             </div>
           </aside>
         </div>
@@ -107,92 +151,169 @@
   </main>
 </div>
 
+<!-- BUNNY MODAL -->
+<div id="bunny-modal">
+  <div id="bunny-box">
+    <svg id="bunny-svg" width="120" height="140" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="38" cy="30" rx="10" ry="28" fill="#ffb6c1"/>
+      <ellipse cx="38" cy="30" rx="5" ry="20" fill="#ff8fa3"/>
+      <ellipse cx="82" cy="30" rx="10" ry="28" fill="#ffb6c1"/>
+      <ellipse cx="82" cy="30" rx="5" ry="20" fill="#ff8fa3"/>
+      <ellipse cx="60" cy="65" rx="32" ry="30" fill="#fff0f6"/>
+      <ellipse cx="60" cy="110" rx="28" ry="26" fill="#ffb6c1"/>
+      <ellipse cx="60" cy="112" rx="16" ry="14" fill="#fff0f6"/>
+      <circle cx="48" cy="60" r="5" fill="#ff8fa3"/>
+      <circle cx="72" cy="60" r="5" fill="#ff8fa3"/>
+      <circle cx="49.5" cy="58.5" r="2" fill="white"/>
+      <circle cx="73.5" cy="58.5" r="2" fill="white"/>
+      <ellipse cx="60" cy="71" rx="4" ry="3" fill="#ff8fa3"/>
+      <path d="M55 75 Q60 80 65 75" stroke="#ff8fa3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="42" cy="70" rx="7" ry="5" fill="#ffb6c1" opacity="0.5"/>
+      <ellipse cx="78" cy="70" rx="7" ry="5" fill="#ffb6c1" opacity="0.5"/>
+      <ellipse cx="32" cy="100" rx="8" ry="14" fill="#ffb6c1" transform="rotate(-20,32,100)"/>
+      <ellipse cx="88" cy="100" rx="8" ry="14" fill="#ffb6c1" transform="rotate(20,88,100)"/>
+      <circle cx="60" cy="134" r="8" fill="white"/>
+    </svg>
+    <h2 style="margin:1.2rem 0 0.5rem;color:#d6336c;font-size:1.5rem;font-family:'Inter',sans-serif;font-weight:800;">Thank You! 🎀</h2>
+    <p style="color:#e0608a;font-size:0.95rem;font-family:'Inter',sans-serif;margin-bottom:1rem;">Your feedback means the world to us!</p>
+    <button class="bunny-close-btn" onclick="closeBunny()">Aww, Thanks! 🐰</button>
+  </div>
+</div>
+
 <script src="recipes-data.js"></script>
 <script src="main.js"></script>
 <script>
-if (!Auth.isLoggedIn()) { window.location.href = 'login.html'; }
+  if (!Auth.isLoggedIn()) { window.location.href = 'login.html'; }
 
-const user = Auth.getUser();
-if (user) {
-  document.getElementById('user-name').innerText = user.name || 'User';
-  document.getElementById('user-email').innerText = user.email || '';
-  document.getElementById('user-avatar').src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400';
-  document.getElementById('user-joined').innerText = `Joined ${user.joined || ''}`;
-  if (user.dietGoal) document.getElementById('pref-diet').value = user.dietGoal;
-  if (user.calorieTarget) document.getElementById('pref-calories').value = user.calorieTarget;
-}
-
-function showToast(msg) {
-  let t = document.querySelector('.toast');
-  if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
-  t.innerText = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-document.querySelector('.avatar-edit').addEventListener('click', () => {
-  document.getElementById('avatar-upload').click();
-});
-
-document.getElementById('avatar-upload').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    user.avatar = ev.target.result;
-    Auth.setUser(user);
-    document.getElementById('user-avatar').src = ev.target.result;
-    showToast('Avatar updated! ✨');
-  };
-  reader.readAsDataURL(file);
-});
-
-document.getElementById('save-profile-btn').addEventListener('click', () => {
-  user.dietGoal = document.getElementById('pref-diet').value;
-  user.calorieTarget = document.getElementById('pref-calories').value;
-  Auth.setUser(user);
-  showToast('Changes saved! ✨');
-});
-
-function updateStats() {
-  const favs   = JSON.parse(localStorage.getItem('forkcast_favorites') || '[]');
-  const cooked = JSON.parse(localStorage.getItem('forkcast_cooked') || '[]');
-  const planner= JSON.parse(localStorage.getItem('forkcast_planner') || '{}');
-  document.getElementById('count-favs').innerText   = favs.length;
-  document.getElementById('count-cooked').innerText = cooked.length;
-  document.getElementById('count-plans').innerText  = Object.keys(planner).length > 0 ? 1 : 0;
-}
-
-function showSection(type) {
-  const titleEl   = document.getElementById('dynamic-title');
-  const contentEl = document.getElementById('dynamic-content-grid');
-  contentEl.innerHTML = '';
-
-  if (type === 'favorites') {
-    titleEl.innerText = 'Your Favorites ❤️';
-    const ids = JSON.parse(localStorage.getItem('forkcast_favorites') || '[]');
-    const recipes = ALL_RECIPES.filter(r => ids.includes(r.id));
-    if (!recipes.length) {
-      contentEl.innerHTML = '<div class="glass" style="padding:2rem;text-align:center;"><p style="color:var(--muted)">No favorites yet. Save some recipes!</p></div>';
-    } else {
-      contentEl.innerHTML = '<div class="recipe-grid" id="fav-grid"></div>';
-      renderRecipeCards(recipes, 'fav-grid');
-    }
-  } else if (type === 'cooked') {
-    titleEl.innerText = "Recipes You've Cooked 🍳";
-    const ids = JSON.parse(localStorage.getItem('forkcast_cooked') || '[]');
-    const recipes = ALL_RECIPES.filter(r => ids.includes(r.id));
-    if (!recipes.length) {
-      contentEl.innerHTML = '<div class="glass" style="padding:2rem;text-align:center;"><p style="color:var(--muted)">No cooked recipes yet!</p></div>';
-    } else {
-      contentEl.innerHTML = '<div class="recipe-grid" id="cooked-grid"></div>';
-      renderRecipeCards(recipes, 'cooked-grid');
-    }
+  const user = Auth.getUser();
+  if (user) {
+    document.getElementById('user-name').innerText = user.name || 'User';
+    document.getElementById('user-email').innerText = user.email || '';
+    document.getElementById('user-avatar').src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400';
+    document.getElementById('user-joined').innerText = `Joined ${user.joined || ''}`;
   }
-  document.getElementById('profile-dynamic-section').scrollIntoView({ behavior: 'smooth' });
-}
 
-updateStats();
+  function showToast(msg) {
+    let t = document.querySelector('.toast');
+    if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+    t.innerText = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  document.querySelector('.avatar-edit').addEventListener('click', () => {
+    document.getElementById('avatar-upload').click();
+  });
+
+  document.getElementById('avatar-upload').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      user.avatar = ev.target.result;
+      Auth.setUser(user);
+      document.getElementById('user-avatar').src = ev.target.result;
+      showToast('Avatar updated! ✨');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function showBunny() {
+    const modal = document.getElementById('bunny-modal');
+    const box = document.getElementById('bunny-box');
+    modal.style.display = 'flex';
+    box.classList.remove('bunny-show');
+    void box.offsetWidth;
+    box.classList.add('bunny-show');
+  }
+
+  function closeBunny() {
+    document.getElementById('bunny-modal').style.display = 'none';
+    document.getElementById('bunny-box').classList.remove('bunny-show');
+  }
+
+  document.getElementById('bunny-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeBunny();
+  });
+
+  document.getElementById('send-feedback-btn').addEventListener('click', async () => {
+    const name = document.getElementById('fb-name').value.trim();
+    const email = document.getElementById('fb-email').value.trim();
+    const message = document.getElementById('fb-message').value.trim();
+    const status = document.getElementById('fb-status');
+
+    if (!name || !email || !message) {
+      status.innerText = 'Please fill all fields!';
+      status.style.color = '#f87171';
+      return;
+    }
+
+    status.innerText = 'Sending...';
+    status.style.color = 'var(--accent)';
+
+    try {
+      const res = await fetch('https://formspree.io/f/mnjrdqpv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ name, email, message })
+      });
+
+      if (res.ok) {
+        status.innerText = '✅ Feedback sent!';
+        status.style.color = '#4ade80';
+        showBunny();
+        document.getElementById('fb-name').value = '';
+        document.getElementById('fb-email').value = '';
+        document.getElementById('fb-message').value = '';
+      } else {
+        status.innerText = '❌ Something went wrong. Try again.';
+        status.style.color = '#f87171';
+      }
+    } catch (err) {
+      status.innerText = '❌ Network error. Try again.';
+      status.style.color = '#f87171';
+    }
+  });
+
+  function updateStats() {
+    const favs    = JSON.parse(localStorage.getItem('forkcast_favorites') || '[]');
+    const cooked  = JSON.parse(localStorage.getItem('forkcast_cooked') || '[]');
+    const planner = JSON.parse(localStorage.getItem('forkcast_planner') || '{}');
+    document.getElementById('count-favs').innerText   = favs.length;
+    document.getElementById('count-cooked').innerText = cooked.length;
+    document.getElementById('count-plans').innerText  = Object.keys(planner).length > 0 ? 1 : 0;
+  }
+
+  function showSection(type) {
+    const titleEl   = document.getElementById('dynamic-title');
+    const contentEl = document.getElementById('dynamic-content-grid');
+    contentEl.innerHTML = '';
+
+    if (type === 'favorites') {
+      titleEl.innerText = 'Your Favorites ❤️';
+      const ids = JSON.parse(localStorage.getItem('forkcast_favorites') || '[]');
+      const recipes = ALL_RECIPES.filter(r => ids.includes(r.id));
+      if (!recipes.length) {
+        contentEl.innerHTML = '<div class="glass" style="padding:2rem;text-align:center;"><p style="color:var(--muted)">No favorites yet!</p></div>';
+      } else {
+        contentEl.innerHTML = '<div class="recipe-grid" id="fav-grid"></div>';
+        renderRecipeCards(recipes, 'fav-grid');
+      }
+    } else if (type === 'cooked') {
+      titleEl.innerText = "Recipes You've Cooked 🍳";
+      const ids = JSON.parse(localStorage.getItem('forkcast_cooked') || '[]');
+      const recipes = ALL_RECIPES.filter(r => ids.includes(r.id));
+      if (!recipes.length) {
+        contentEl.innerHTML = '<div class="glass" style="padding:2rem;text-align:center;"><p style="color:var(--muted)">No cooked recipes yet!</p></div>';
+      } else {
+        contentEl.innerHTML = '<div class="recipe-grid" id="cooked-grid"></div>';
+        renderRecipeCards(recipes, 'cooked-grid');
+      }
+    }
+    document.getElementById('profile-dynamic-section').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  updateStats();
 </script>
 </body>
 </html>
