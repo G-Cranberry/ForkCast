@@ -4,7 +4,6 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Sign Up – Forkcast</title>
-<link rel="stylesheet" href="style.css?v=1.1" />
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -13,12 +12,13 @@
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   const firebaseConfig = {
-    apiKey:            "AIzaSyBBY2W3EH1Ng5WeBOvTKLxFfJ0aa6UmE",
+    apiKey:            "AIzaSyBBV2W3EH1Ng5WeBOvTKLxFfJ0aa6UlPeo",
     authDomain:        "forkcast-61470.firebaseapp.com",
     projectId:         "forkcast-61470",
     storageBucket:     "forkcast-61470.firebasestorage.app",
     messagingSenderId: "283261245477",
-    appId:             "1:283261245477:web:d0190096a832f3b14ab5a3"
+    appId:             "1:283261245477:web:417d0190096a832f3487cc",
+    measurementId:     "G-3NNMQLSGDW"
   };
 
   const app      = initializeApp(firebaseConfig);
@@ -45,107 +45,85 @@
 </script>
 
 <style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  margin: 0; padding: 0;
   min-height: 100vh;
   background: #f7f3ee;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Inter', sans-serif;
+  transition: background 0.3s;
 }
 body.dark-mode { background: #0b0b0b; }
 
+.bg-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  pointer-events: none;
+  animation: blobFloat 8s ease-in-out infinite alternate;
+  z-index: 0;
+}
+.bg-blob-1 { width: 400px; height: 400px; background: #a78bfa; top: -100px; right: -100px; animation-duration: 7s; }
+.bg-blob-2 { width: 350px; height: 350px; background: #60a5fa; bottom: -80px; left: -80px; animation-duration: 9s; }
+.bg-blob-3 { width: 250px; height: 250px; background: #ff8fa3; top: 40%; right: 40%; animation-duration: 6s; }
+@keyframes blobFloat {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(30px, 20px) scale(1.08); }
+}
+
 .signup-card {
-  background: white;
-  border-radius: 24px;
+  position: relative;
+  z-index: 1;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.6);
+  border-radius: 28px;
   padding: 3rem 2.5rem;
   width: 90%;
   max-width: 420px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.12);
   text-align: center;
+  animation: cardPop 0.6s cubic-bezier(0.19,1,0.22,1) both;
+}
+@keyframes cardPop {
+  from { transform: scale(0.92); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
 }
 body.dark-mode .signup-card {
-  background: #1a1a1a;
+  background: rgba(20,20,20,0.85);
+  border-color: rgba(255,255,255,0.08);
   box-shadow: 0 20px 60px rgba(0,0,0,0.5);
 }
 
-.logo-area {
-  margin-bottom: 2rem;
-}
-.logo-area .logo-text {
-  font-size: 2rem;
-  font-weight: 900;
-  letter-spacing: -1px;
-}
+.logo-area { margin-bottom: 2rem; }
+.logo-area .logo-text { font-size: 2rem; font-weight: 900; letter-spacing: -1px; }
 .logo-area .fork { color: #ff8fa3; }
 .logo-area .cast { color: #333; }
 body.dark-mode .logo-area .cast { color: #fff; }
-.logo-area p {
-  color: #888;
-  font-size: 0.9rem;
-  margin-top: 0.3rem;
-}
+.logo-area p { color: #888; font-size: 0.9rem; margin-top: 0.3rem; }
 
 .google-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 0.9rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 14px;
-  background: white;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #333;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.75rem; width: 100%; padding: 0.9rem;
+  border: 2px solid #e0e0e0; border-radius: 14px;
+  background: white; font-size: 1rem; font-weight: 600;
+  color: #333; cursor: pointer; transition: all 0.2s;
 }
-.google-btn:hover {
-  border-color: #ff8fa3;
-  box-shadow: 0 4px 15px rgba(255,143,163,0.15);
-  transform: translateY(-1px);
-}
+.google-btn:hover { border-color: #ff8fa3; box-shadow: 0 4px 15px rgba(255,143,163,0.2); transform: translateY(-1px); }
 .google-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 .google-btn img { width: 20px; height: 20px; }
-body.dark-mode .google-btn {
-  background: #2a2a2a;
-  border-color: #444;
-  color: #fff;
-}
+body.dark-mode .google-btn { background: #2a2a2a; border-color: #444; color: #fff; }
 
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin: 1.5rem 0;
-  color: #aaa;
-  font-size: 0.82rem;
-}
-.divider::before, .divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: #e0e0e0;
-}
-body.dark-mode .divider::before,
-body.dark-mode .divider::after { background: #333; }
+.divider { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0; color: #aaa; font-size: 0.82rem; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e0e0e0; }
+body.dark-mode .divider::before, body.dark-mode .divider::after { background: #333; }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  margin-bottom: 1rem;
-  text-align: left;
-}
-.form-group label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #555;
-}
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; text-align: left; }
+.form-group label { font-size: 0.85rem; font-weight: 600; color: #555; }
 body.dark-mode .form-group label { color: #aaa; }
 .form-group input {
   padding: 0.85rem 1rem;
@@ -154,83 +132,52 @@ body.dark-mode .form-group label { color: #aaa; }
   font-size: 0.95rem;
   background: #fafafa;
   color: #333;
-  transition: border-color 0.2s, box-shadow 0.2s;
   outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
 }
-.form-group input:focus {
-  border-color: #ff8fa3;
-  box-shadow: 0 0 0 3px rgba(255,143,163,0.15);
-  background: white;
-}
-body.dark-mode .form-group input {
-  background: #2a2a2a;
-  border-color: #444;
-  color: #fff;
-}
-body.dark-mode .form-group input:focus {
-  background: #333;
-}
+.form-group input:focus { border-color: #ff8fa3; box-shadow: 0 0 0 3px rgba(255,143,163,0.15); background: white; }
+body.dark-mode .form-group input { background: #2a2a2a; border-color: #444; color: #fff; }
+body.dark-mode .form-group input:focus { background: #333; }
 
 .submit-btn {
-  width: 100%;
-  padding: 0.9rem;
+  width: 100%; padding: 0.9rem;
   background: linear-gradient(135deg, #ff8fa3, #ff5c7c);
-  color: white;
-  border: none;
-  border-radius: 14px;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
+  color: white; border: none; border-radius: 14px;
+  font-size: 1rem; font-weight: 700; cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 4px 15px rgba(255,92,124,0.3);
   margin-top: 0.5rem;
+  font-family: inherit;
 }
 .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,92,124,0.4); }
 .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
-.error-msg {
-  color: #e74c3c;
-  font-size: 0.83rem;
-  text-align: center;
-  min-height: 1.2rem;
-  margin: 0.5rem 0;
-}
+.error-msg { color: #e74c3c; font-size: 0.83rem; text-align: center; min-height: 1.2rem; margin: 0.5rem 0; }
 
-.footer-link {
-  margin-top: 1.5rem;
-  color: #888;
-  font-size: 0.88rem;
-}
-.footer-link a {
-  color: #ff5c7c;
-  font-weight: 600;
-  text-decoration: none;
-}
+.footer-link { margin-top: 1.5rem; color: #888; font-size: 0.88rem; }
+.footer-link a { color: #ff5c7c; font-weight: 600; text-decoration: none; }
 .footer-link a:hover { text-decoration: underline; }
 
 .theme-toggle {
-  position: fixed;
-  top: 20px; right: 20px;
-  width: 42px; height: 42px;
-  border-radius: 50%;
-  border: 1.5px solid #e0e0e0;
-  background: white;
-  cursor: pointer;
-  font-size: 1.1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: fixed; top: 20px; right: 20px;
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 1.5px solid #e0e0e0; background: white;
+  cursor: pointer; font-size: 1.1rem;
+  display: flex; align-items: center; justify-content: center;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   transition: transform 0.3s;
+  z-index: 999;
 }
 .theme-toggle:hover { transform: rotate(20deg); }
-body.dark-mode .theme-toggle {
-  background: #1a1a1a;
-  border-color: #444;
-}
+body.dark-mode .theme-toggle { background: #1a1a1a; border-color: #444; }
 </style>
 </head>
 <body>
+
+<div class="bg-blob bg-blob-1"></div>
+<div class="bg-blob bg-blob-2"></div>
+<div class="bg-blob bg-blob-3"></div>
 
 <button class="theme-toggle" id="themeBtn">🌙</button>
 
@@ -242,7 +189,6 @@ body.dark-mode .theme-toggle {
     <p>Create your account to get started</p>
   </div>
 
-  <!-- Google Sign In Button -->
   <button class="google-btn" id="googleBtn" type="button">
     <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google">
     Continue with Google
@@ -250,7 +196,6 @@ body.dark-mode .theme-toggle {
 
   <div class="divider">or sign up with email</div>
 
-  <!-- Email/Password Form -->
   <div class="form-group">
     <label for="name">Full Name</label>
     <input type="text" id="name" placeholder="Shilpa G" />
@@ -265,7 +210,6 @@ body.dark-mode .theme-toggle {
   </div>
 
   <p class="error-msg" id="errMsg"></p>
-
   <button class="submit-btn" id="submitBtn" type="button">Create Account</button>
 
   <div class="footer-link">
@@ -274,7 +218,6 @@ body.dark-mode .theme-toggle {
 </div>
 
 <script>
-// Google Login
 document.getElementById('googleBtn').addEventListener('click', async () => {
   const btn = document.getElementById('googleBtn');
   const err = document.getElementById('errMsg');
@@ -283,7 +226,6 @@ document.getElementById('googleBtn').addEventListener('click', async () => {
     btn.disabled = true;
     btn.innerHTML = '<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google"> Opening Google...';
     await window._signInWithPopup(window._auth, window._provider);
-    // onAuthStateChanged upar handle kar raha hai redirect
   } catch (e) {
     btn.disabled = false;
     btn.innerHTML = '<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google"> Continue with Google';
@@ -296,7 +238,6 @@ document.getElementById('googleBtn').addEventListener('click', async () => {
   }
 });
 
-// Email Signup
 document.getElementById('submitBtn').addEventListener('click', async () => {
   const name  = document.getElementById('name').value.trim();
   const email = document.getElementById('email').value.trim();
@@ -304,17 +245,14 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   const err   = document.getElementById('errMsg');
   const btn   = document.getElementById('submitBtn');
   err.textContent = '';
-
-  if (!name)        { err.textContent = 'Naam daalo.'; return; }
-  if (!email)       { err.textContent = 'Email daalo.'; return; }
+  if (!name)           { err.textContent = 'Naam daalo.'; return; }
+  if (!email)          { err.textContent = 'Email daalo.'; return; }
   if (pass.length < 6) { err.textContent = 'Password minimum 6 characters.'; return; }
-
   try {
     btn.disabled = true;
     btn.textContent = 'Creating account...';
     const result = await window._createUser(window._auth, email, pass);
     await window._updateProfile(result.user, { displayName: name });
-    // onAuthStateChanged redirect karega
   } catch (e) {
     btn.disabled = false;
     btn.textContent = 'Create Account';
@@ -327,7 +265,6 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   }
 });
 
-// Theme toggle
 const themeBtn = document.getElementById('themeBtn');
 if (localStorage.getItem('theme') === 'dark') {
   document.body.classList.add('dark-mode');
