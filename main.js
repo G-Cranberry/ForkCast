@@ -272,7 +272,7 @@ const Auth = {
   },
   logout() {
     localStorage.removeItem('forkcast_user');
-    window.location.href = 'signup.html';
+    window.location.href = 'login.html';
   },
   isLoggedIn() {
     return !!localStorage.getItem('forkcast_user');
@@ -283,7 +283,7 @@ const Auth = {
 const publicPages = ['signup.html', 'login.html', 'index.html'];
 const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 if (!publicPages.includes(currentPage) && !Auth.isLoggedIn()) {
-  window.location.href = 'signup.html';
+  window.location.href = 'login.html';
 }
 // ---- Dynamic Navigation & Header ----
 function updateNav() {
