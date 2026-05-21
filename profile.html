@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css?v=1.1" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
 </head>
+<body>
 
 <div class="profile-bg"></div>
 <div class="app-wrap">
@@ -130,29 +131,38 @@
     padding:3rem 2.5rem;
     text-align:center;
     box-shadow:0 0 60px rgba(255,143,163,0.4);
-    animation:bunnyPop 0.5s cubic-bezier(0.19,1,0.22,1) forwards;
     max-width:340px;
     width:90%;
   ">
 
-    <svg width="120" height="140" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg" style="animation:bunnyBounce 1s ease-in-out infinite alternate;">
+    <svg width="120" height="140" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg" id="bunny-svg" style="animation:bunnyBounce 1s ease-in-out infinite alternate;">
+      <!-- Ears -->
       <ellipse cx="38" cy="30" rx="10" ry="28" fill="#ffb6c1"/>
       <ellipse cx="38" cy="30" rx="5" ry="20" fill="#ff8fa3"/>
       <ellipse cx="82" cy="30" rx="10" ry="28" fill="#ffb6c1"/>
       <ellipse cx="82" cy="30" rx="5" ry="20" fill="#ff8fa3"/>
+      <!-- Head -->
       <ellipse cx="60" cy="65" rx="32" ry="30" fill="#fff0f6"/>
+      <!-- Body -->
       <ellipse cx="60" cy="110" rx="28" ry="26" fill="#ffb6c1"/>
+      <!-- Belly -->
       <ellipse cx="60" cy="112" rx="16" ry="14" fill="#fff0f6"/>
+      <!-- Eyes -->
       <circle cx="48" cy="60" r="5" fill="#ff8fa3"/>
       <circle cx="72" cy="60" r="5" fill="#ff8fa3"/>
       <circle cx="49.5" cy="58.5" r="2" fill="white"/>
       <circle cx="73.5" cy="58.5" r="2" fill="white"/>
+      <!-- Nose -->
       <ellipse cx="60" cy="71" rx="4" ry="3" fill="#ff8fa3"/>
+      <!-- Mouth -->
       <path d="M55 75 Q60 80 65 75" stroke="#ff8fa3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- Cheeks -->
       <ellipse cx="42" cy="70" rx="7" ry="5" fill="#ffb6c1" opacity="0.5"/>
       <ellipse cx="78" cy="70" rx="7" ry="5" fill="#ffb6c1" opacity="0.5"/>
+      <!-- Arms -->
       <ellipse cx="32" cy="100" rx="8" ry="14" fill="#ffb6c1" transform="rotate(-20,32,100)"/>
       <ellipse cx="88" cy="100" rx="8" ry="14" fill="#ffb6c1" transform="rotate(20,88,100)"/>
+      <!-- Tail -->
       <circle cx="60" cy="134" r="8" fill="white"/>
     </svg>
 
@@ -215,6 +225,7 @@
     setTimeout(() => toast.classList.remove('show'), 3000);
   }
 
+  // Avatar
   const avatarEditBtn = document.querySelector('.avatar-edit');
   const avatarInput = document.getElementById('avatar-upload');
   avatarEditBtn.addEventListener('click', () => avatarInput.click());
@@ -235,20 +246,25 @@
     }
   });
 
+  // Bunny
   function showBunny() {
     const modal = document.getElementById('bunny-modal');
+    const box = document.getElementById('bunny-box');
     modal.style.display = 'flex';
+    box.style.animation = 'none';
+    box.offsetHeight; // force reflow
+    box.style.animation = 'bunnyPop 0.5s cubic-bezier(0.19,1,0.22,1) forwards';
   }
 
   function closeBunny() {
-    const modal = document.getElementById('bunny-modal');
-    modal.style.display = 'none';
+    document.getElementById('bunny-modal').style.display = 'none';
   }
 
   document.getElementById('bunny-modal').addEventListener('click', function(e) {
     if (e.target === this) closeBunny();
   });
 
+  // Feedback
   document.getElementById('send-feedback-btn').addEventListener('click', async () => {
     const name = document.getElementById('fb-name').value.trim();
     const email = document.getElementById('fb-email').value.trim();
@@ -291,6 +307,7 @@
     }
   });
 
+  // Stats
   function updateStats() {
     const favs = JSON.parse(localStorage.getItem('forkcast_favorites') || '[]');
     const cooked = JSON.parse(localStorage.getItem('forkcast_cooked') || '[]');
@@ -345,5 +362,6 @@
 
   updateStats();
 </script>
+
 </body>
 </html>
