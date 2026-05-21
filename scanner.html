@@ -158,16 +158,25 @@
 
   <main class="main">
     <header class="topbar">
-      <div class="topbar-left">
-        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
-          <span></span><span></span><span></span>
-        </button>
-        <div class="topbar-logo">
-          <span class="logo-text"><span class="fork">Fork</span><span class="cast">Cast</span></span>
-        </div>
-      </div>
-      <div class="topbar-right"></div>
-    </header>
+  <div class="topbar-left">
+    <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="topbar-logo">
+      <img src="ForkCast.jpeg" alt="ForkCast Logo">
+      <span class="logo-text"><span class="fork">Fork</span><span class="cast">Cast</span></span>
+    </div>
+  </div>
+  <div class="search-bar-wrap">
+    <input type="text" id="global-search-input" placeholder="Enter ingredients..." />
+    <div class="search-actions">
+      <span id="voice-search-btn" class="search-action-btn" title="Voice Search">🎤</span>
+      <span id="scan-search-btn" class="search-action-btn" title="Scan Ingredients">📷</span>
+    </div>
+    <button class="search-btn" id="global-search-btn">Search</button>
+  </div>
+  <div class="topbar-right"></div>
+</header>>
 
     <div class="page-content fade-up">
       <div class="scanner-container">
