@@ -98,6 +98,8 @@ body.light-mode .detected-list { background: #fff !important; }
 body.light-mode .section-box { background: rgba(255,255,255,0.8) !important; }
 
 /* ---------- RESET ---------- */
+
+body:not(.dark-mode)
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
@@ -190,7 +192,7 @@ select, input { font-family: inherit; }
   backdrop-filter: blur(2px);
 }
 .app-wrap.menu-active .sidebar {
-  transform: translateX(0) !important;
+  .app-wrap.menu-active .sidebar { transform: translateX(0) !important; }
 }
 .sidebar-overlay.show { display: block; }
 .app-wrap.menu-active .sidebar {
