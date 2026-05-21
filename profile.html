@@ -8,7 +8,7 @@
   <style>
     @keyframes bunnyPop {
       from { transform: scale(0.5); opacity: 0; }
-      to   { transform: scale(1);   opacity: 1; }
+      to   { transform: scale(1); opacity: 1; }
     }
     @keyframes bunnyBounce {
       from { transform: translateY(0px); }
@@ -39,16 +39,10 @@
     #bunny-svg { animation: bunnyBounce 1s ease-in-out infinite alternate; }
     .bunny-close-btn {
       background: linear-gradient(135deg, #ff8fa3, #f472b6);
-      color: white;
-      border: none;
-      border-radius: 50px;
-      padding: 0.6rem 2rem;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 20px rgba(255,143,163,0.4);
-      transition: transform 0.2s;
-      margin-top: 1rem;
+      color: white; border: none; border-radius: 50px;
+      padding: 0.6rem 2rem; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; box-shadow: 0 4px 20px rgba(255,143,163,0.4);
+      transition: transform 0.2s; margin-top: 1rem;
     }
     .bunny-close-btn:hover { transform: scale(1.05); }
   </style>
@@ -130,15 +124,15 @@
             <div class="glass" style="padding:1.5rem;">
               <div class="input-group">
                 <label>Your Name</label>
-                <input type="text" id="fb-name" class="add-input" style="width:100%;min-width:unset;" placeholder="Your name" />
+                <input type="text" id="fb-name" placeholder="Your name" />
               </div>
               <div class="input-group">
                 <label>Your Email</label>
-                <input type="email" id="fb-email" class="add-input" style="width:100%;min-width:unset;" placeholder="your@email.com" />
+                <input type="email" id="fb-email" placeholder="your@email.com" />
               </div>
               <div class="input-group">
                 <label>Message</label>
-                <textarea id="fb-message" class="add-input" rows="4" style="width:100%;min-width:unset;resize:vertical;" placeholder="Tell us what you think..."></textarea>
+                <textarea id="fb-message" rows="4" style="resize:vertical;" placeholder="Tell us what you think..."></textarea>
               </div>
               <button class="btn-primary" id="send-feedback-btn" style="width:100%;margin-top:0.5rem;">Send Feedback 🚀</button>
               <p id="fb-status" style="text-align:center;margin-top:0.75rem;font-size:0.9rem;"></p>
@@ -201,10 +195,7 @@
     setTimeout(() => t.classList.remove('show'), 3000);
   }
 
-  document.querySelector('.avatar-edit').addEventListener('click', () => {
-    document.getElementById('avatar-upload').click();
-  });
-
+  document.querySelector('.avatar-edit').addEventListener('click', () => document.getElementById('avatar-upload').click());
   document.getElementById('avatar-upload').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -241,23 +232,19 @@
     const email = document.getElementById('fb-email').value.trim();
     const message = document.getElementById('fb-message').value.trim();
     const status = document.getElementById('fb-status');
-
     if (!name || !email || !message) {
       status.innerText = 'Please fill all fields!';
       status.style.color = '#f87171';
       return;
     }
-
     status.innerText = 'Sending...';
     status.style.color = 'var(--accent)';
-
     try {
       const res = await fetch('https://formspree.io/f/mnjrdqpv', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ name, email, message })
       });
-
       if (res.ok) {
         status.innerText = '✅ Feedback sent!';
         status.style.color = '#4ade80';
@@ -266,11 +253,11 @@
         document.getElementById('fb-email').value = '';
         document.getElementById('fb-message').value = '';
       } else {
-        status.innerText = '❌ Something went wrong. Try again.';
+        status.innerText = '❌ Something went wrong.';
         status.style.color = '#f87171';
       }
     } catch (err) {
-      status.innerText = '❌ Network error. Try again.';
+      status.innerText = '❌ Network error.';
       status.style.color = '#f87171';
     }
   });
@@ -288,7 +275,6 @@
     const titleEl   = document.getElementById('dynamic-title');
     const contentEl = document.getElementById('dynamic-content-grid');
     contentEl.innerHTML = '';
-
     if (type === 'favorites') {
       titleEl.innerText = 'Your Favorites ❤️';
       const ids = JSON.parse(localStorage.getItem('forkcast_favorites') || '[]');
