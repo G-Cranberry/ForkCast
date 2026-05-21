@@ -7,9 +7,9 @@
   <link rel="stylesheet" href="style.css?v=1.1" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
 
-  <!-- API KEY — apni real Anthropic API key yahan daalo -->
   <script>
-    window.GEMINI_API_KEY = 'AIzaSyBRjJKkuFl7ZCLYJYdB0hAKtjzYMpnoMlQ';
+    // Apni real Gemini API key yahan daalo
+    window.GEMINI_API_KEY = 'YOUR_GEMINI_API_KEY_HERE';
   </script>
 
   <style>
@@ -126,7 +126,6 @@
     body.dark-mode .action-modal-content { background: var(--bg2); color: var(--text); }
     body.dark-mode .detected-item { border-color: var(--border); }
     body.dark-mode .api-attribution { background: rgba(0,0,0,0.8); color: #aaa; }
-
     #loading-overlay {
       position: absolute;
       top: 50%; left: 50%;
@@ -153,14 +152,10 @@
 <body>
 <div class="app-wrap">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
-    <nav class="sidebar-nav">
-      <!-- Dynamically filled by main.js -->
-    </nav>
+    <nav class="sidebar-nav"></nav>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
     <header class="topbar">
       <div class="topbar-left">
@@ -200,7 +195,6 @@
           </label>
         </div>
 
-        <!-- Detected Items List -->
         <div class="detected-list" id="detected-list-container">
           <h3 style="margin-top:0; font-weight:800; border-bottom:2px solid var(--border); padding-bottom:0.5rem;">
             Detected Ingredients
@@ -215,7 +209,6 @@
   </main>
 </div>
 
-<!-- Action Modal -->
 <div class="action-modal" id="action-modal">
   <div class="action-modal-content">
     <h3>What's next?</h3>
@@ -231,15 +224,15 @@
 </div>
 
 <div class="api-attribution">
-  Powered by <a href="https://www.anthropic.com" target="_blank">Claude AI</a>
+  Powered by <a href="https://ai.google.dev" target="_blank">Gemini AI</a>
 </div>
 
 <script src="main.js"></script>
 <script>
-  const video       = document.getElementById('camera-feed');
-  const canvas      = document.getElementById('detection-canvas');
-  const ctx         = canvas.getContext('2d');
-  const scanBtn     = document.getElementById('scan-btn');
+  const video          = document.getElementById('camera-feed');
+  const canvas         = document.getElementById('detection-canvas');
+  const ctx            = canvas.getContext('2d');
+  const scanBtn        = document.getElementById('scan-btn');
   const loadingOverlay = document.getElementById('loading-overlay');
   const listContainer  = document.getElementById('detected-list-container');
   const itemsList      = document.getElementById('items-list');
@@ -250,7 +243,6 @@
   let stream = null;
   let selectedItems = [];
 
-  // ── Grocery categories ──────────────────────────────────────
   const GROCERY_VOCAB = {
     fruits:  ['apple','banana','mango','orange','grapes','watermelon','strawberry',
                'pomegranate','pineapple','papaya','kiwi','lemon','lime','pear',
@@ -292,62 +284,44 @@
     }
   }
 
-  // ── Claude Vision API call ───────────────────────────────────
-async function callClaudeVision(base64Image, mediaType = 'image/jpeg') {
-  const apiKey = window.GEMINI_API_KEY || '';
-  if (!apiKey || apiKey === 'AIzaSyBRjJKkuFl7ZCLYJYdB0hAKtjzYMpnoMlQ') {
-    throw new Error('Gemini API key missing. Set window.GEMINI_API_KEY in scanner.html');
-  }
-
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            {
-              inline_data: {
-                mime_type: mediaType,
-                data: base64Image
-              }
-            },
-            {
-              text: 'Look at this image and identify all food ingredients, vegetables, fruits, dairy products, or grocery items visible. Return ONLY a JSON array of item names in lowercase, max 8 items. Example: ["tomato","onion","milk","bread"]. If no food items visible, return []. Return ONLY the JSON array, nothing else.'
-            }
-          ]
-        }],
-        generationConfig: { maxOutputTokens: 200, temperature: 0.1 }
-      })
+  // ── Gemini Vision API call (THIS IS THE FIXED FUNCTION) ──────
+  async function callClaudeVision(base64Image, mediaType = 'image/jpeg') {
+    const apiKey = window.GEMINI_API_KEY || '';
+    if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
+      throw new Error('Gemini API key missing. Set window.GEMINI_API_KEY in scanner.html');
     }
-  );
 
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Gemini API error ${response.status}: ${errText}`);
-  }
-
-  const data = await response.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '[]';
-
-  let items = [];
-  try {
-    items = JSON.parse(text);
-  } catch {
-    const match = text.match(/\[.*?\]/s);
-    if (match) items = JSON.parse(match[0]);
-  }
-  return items || [];
-}
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              {
+                inline_data: {
+                  mime_type: mediaType,
+                  data: base64Image
+                }
+              },
+              {
+                text: 'Look at this image and identify all food ingredients, vegetables, fruits, dairy products, or grocery items visible. Return ONLY a JSON array of item names in lowercase, max 8 items. Example: ["tomato","onion","milk","bread"]. If no food items visible, return []. Return ONLY the JSON array, nothing else.'
+              }
+            ]
+          }],
+          generationConfig: { maxOutputTokens: 200, temperature: 0.1 }
+        })
+      }
+    );
 
     if (!response.ok) {
       const errText = await response.text();
-      throw new Error(`API error ${response.status}: ${errText}`);
+      throw new Error(`Gemini API error ${response.status}: ${errText}`);
     }
 
     const data = await response.json();
-    const text = data.content[0].text.trim();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '[]';
 
     let items = [];
     try {
@@ -401,44 +375,37 @@ async function callClaudeVision(base64Image, mediaType = 'image/jpeg') {
     scanBtn.disabled = true;
     loadingOverlay.style.display = 'block';
 
-    try {
-      const reader = new FileReader();
-      reader.onload = async (ev) => {
-        const dataURL = ev.target.result;
-        const base64Image = dataURL.split(',')[1];
-        const mediaType   = file.type || 'image/jpeg';
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataURL = ev.target.result;
+      const base64Image = dataURL.split(',')[1];
+      const mediaType   = file.type || 'image/jpeg';
 
-        // Show preview on canvas
-        const img = new Image();
-        img.onload = () => {
-          canvas.width  = img.width;
-          canvas.height = img.height;
-          ctx.drawImage(img, 0, 0);
-        };
-        img.src = dataURL;
-
-        try {
-          const items = await callClaudeVision(base64Image, mediaType);
-          if (items.length > 0) {
-            populateList(items);
-          } else {
-            alert('No food items detected in the uploaded image.');
-          }
-        } catch (err) {
-          console.error('Upload scan error:', err);
-          alert('Scan failed: ' + err.message);
-        } finally {
-          loadingOverlay.style.display = 'none';
-          scanBtn.disabled = false;
-          uploadInput.value = '';
-        }
+      const img = new Image();
+      img.onload = () => {
+        canvas.width  = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
       };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      loadingOverlay.style.display = 'none';
-      scanBtn.disabled = false;
-      alert('Could not read file: ' + err.message);
-    }
+      img.src = dataURL;
+
+      try {
+        const items = await callClaudeVision(base64Image, mediaType);
+        if (items.length > 0) {
+          populateList(items);
+        } else {
+          alert('No food items detected in the uploaded image.');
+        }
+      } catch (err) {
+        console.error('Upload scan error:', err);
+        alert('Scan failed: ' + err.message);
+      } finally {
+        loadingOverlay.style.display = 'none';
+        scanBtn.disabled = false;
+        uploadInput.value = '';
+      }
+    };
+    reader.readAsDataURL(file);
   });
 
   // ── Populate detected items list ─────────────────────────────
@@ -513,7 +480,6 @@ async function callClaudeVision(base64Image, mediaType = 'image/jpeg') {
 
   scanBtn.addEventListener('click', analyzeFrame);
 
-  // Boot
   initCamera();
 </script>
 </body>
