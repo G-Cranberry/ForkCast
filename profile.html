@@ -11,14 +11,10 @@
 <div class="profile-bg"></div>
 <div class="app-wrap">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
-    <nav class="sidebar-nav">
-      <!-- Dynamically filled by main.js -->
-    </nav>
+    <nav class="sidebar-nav"></nav>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
     <header class="topbar">
       <div class="topbar-left">
@@ -54,7 +50,7 @@
 
         <div class="profile-stats">
           <div class="stat-card glass" onclick="showSection('cooked')">
-            <span class="stat-val" id="count-cooked">24</span>
+            <span class="stat-val" id="count-cooked">0</span>
             <span class="stat-label">Recipes Cooked</span>
           </div>
           <div class="stat-card glass" onclick="showSection('favorites')">
@@ -91,7 +87,6 @@
             </div>
           </section>
 
-          <!-- FEEDBACK FORM — Preferences ki jagah -->
           <aside>
             <h2 class="sec-title">Feedback 💬</h2>
             <div class="glass" style="padding:1.5rem;">
@@ -113,15 +108,89 @@
           </aside>
 
         </div>
-      </div><!-- end profile-page-content -->
+      </div>
     </div>
   </main>
 </div>
 
+<!-- BUNNY MODAL -->
+<div id="bunny-modal" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(6px);
+  z-index:9999;
+  justify-content:center;
+  align-items:center;
+">
+  <div id="bunny-box" style="
+    background:linear-gradient(135deg,#ffe4ef,#fff0f6);
+    border-radius:32px;
+    padding:3rem 2.5rem;
+    text-align:center;
+    box-shadow:0 0 60px rgba(255,143,163,0.4);
+    animation:bunnyPop 0.5s cubic-bezier(0.19,1,0.22,1) forwards;
+    max-width:340px;
+    width:90%;
+  ">
+
+    <svg width="120" height="140" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg" style="animation:bunnyBounce 1s ease-in-out infinite alternate;">
+      <ellipse cx="38" cy="30" rx="10" ry="28" fill="#ffb6c1"/>
+      <ellipse cx="38" cy="30" rx="5" ry="20" fill="#ff8fa3"/>
+      <ellipse cx="82" cy="30" rx="10" ry="28" fill="#ffb6c1"/>
+      <ellipse cx="82" cy="30" rx="5" ry="20" fill="#ff8fa3"/>
+      <ellipse cx="60" cy="65" rx="32" ry="30" fill="#fff0f6"/>
+      <ellipse cx="60" cy="110" rx="28" ry="26" fill="#ffb6c1"/>
+      <ellipse cx="60" cy="112" rx="16" ry="14" fill="#fff0f6"/>
+      <circle cx="48" cy="60" r="5" fill="#ff8fa3"/>
+      <circle cx="72" cy="60" r="5" fill="#ff8fa3"/>
+      <circle cx="49.5" cy="58.5" r="2" fill="white"/>
+      <circle cx="73.5" cy="58.5" r="2" fill="white"/>
+      <ellipse cx="60" cy="71" rx="4" ry="3" fill="#ff8fa3"/>
+      <path d="M55 75 Q60 80 65 75" stroke="#ff8fa3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="42" cy="70" rx="7" ry="5" fill="#ffb6c1" opacity="0.5"/>
+      <ellipse cx="78" cy="70" rx="7" ry="5" fill="#ffb6c1" opacity="0.5"/>
+      <ellipse cx="32" cy="100" rx="8" ry="14" fill="#ffb6c1" transform="rotate(-20,32,100)"/>
+      <ellipse cx="88" cy="100" rx="8" ry="14" fill="#ffb6c1" transform="rotate(20,88,100)"/>
+      <circle cx="60" cy="134" r="8" fill="white"/>
+    </svg>
+
+    <h2 style="margin:1.2rem 0 0.5rem; color:#d6336c; font-size:1.5rem; font-family:'Inter',sans-serif; font-weight:800;">Thank You! 🎀</h2>
+    <p style="color:#e0608a; font-size:0.95rem; font-family:'Inter',sans-serif; margin-bottom:1.5rem;">Your feedback means the world to us!</p>
+
+    <button onclick="closeBunny()" style="
+      background:linear-gradient(135deg,#ff8fa3,#f472b6);
+      color:white;
+      border:none;
+      border-radius:50px;
+      padding:0.6rem 2rem;
+      font-size:0.95rem;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:0 4px 20px rgba(255,143,163,0.4);
+      transition:transform 0.2s;
+    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+      Aww, Thanks! 🐰
+    </button>
+
+  </div>
+</div>
+
+<style>
+  @keyframes bunnyPop {
+    from { transform: scale(0.5); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+  @keyframes bunnyBounce {
+    from { transform: translateY(0px); }
+    to   { transform: translateY(-10px); }
+  }
+</style>
+
 <script src="recipes-data.js"></script>
 <script src="main.js"></script>
 <script>
-  // Redirect if not logged in
   if (!Auth.isLoggedIn()) {
     window.location.href = 'login.html';
   }
@@ -134,7 +203,6 @@
     document.getElementById('user-joined').innerText = `Joined ${user.joined}`;
   }
 
-  // Toast
   function showToast(msg) {
     let toast = document.querySelector('.toast');
     if (!toast) {
@@ -147,7 +215,6 @@
     setTimeout(() => toast.classList.remove('show'), 3000);
   }
 
-  // Avatar edit
   const avatarEditBtn = document.querySelector('.avatar-edit');
   const avatarInput = document.getElementById('avatar-upload');
   avatarEditBtn.addEventListener('click', () => avatarInput.click());
@@ -168,7 +235,20 @@
     }
   });
 
-  // FEEDBACK FORM — Formspree se Gmail pe aayega
+  function showBunny() {
+    const modal = document.getElementById('bunny-modal');
+    modal.style.display = 'flex';
+  }
+
+  function closeBunny() {
+    const modal = document.getElementById('bunny-modal');
+    modal.style.display = 'none';
+  }
+
+  document.getElementById('bunny-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeBunny();
+  });
+
   document.getElementById('send-feedback-btn').addEventListener('click', async () => {
     const name = document.getElementById('fb-name').value.trim();
     const email = document.getElementById('fb-email').value.trim();
@@ -195,8 +275,9 @@
       });
 
       if (res.ok) {
-        status.innerText = '✅ Feedback sent! Thank you.';
+        status.innerText = '✅ Feedback sent!';
         status.style.color = '#4ade80';
+        showBunny();
         document.getElementById('fb-name').value = '';
         document.getElementById('fb-email').value = '';
         document.getElementById('fb-message').value = '';
@@ -210,7 +291,6 @@
     }
   });
 
-  // Stats
   function updateStats() {
     const favs = JSON.parse(localStorage.getItem('forkcast_favorites') || '[]');
     const cooked = JSON.parse(localStorage.getItem('forkcast_cooked') || '[]');
