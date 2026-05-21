@@ -890,3 +890,63 @@ body.dark-mode .voice-modal-content {
 body.dark-mode .voice-status {
   color: #e6edf3;
 }
+
+/* =========================
+   GROCERY DARK MODE FIX
+   ========================= */
+
+body.dark-mode .cat-header {
+  color: #ffffff !important;
+  font-weight: 800;
+}
+
+body.dark-mode .grocery-cat-card {
+  background: #161b22 !important;
+  border: 1px solid #2a2a35;
+}
+
+/* Category header gradients darker */
+body.dark-mode .grocery-cat-card:nth-child(1) .cat-header {
+  background: linear-gradient(135deg, #5a1e2d, #7a3145);
+}
+
+body.dark-mode .grocery-cat-card:nth-child(2) .cat-header {
+  background: linear-gradient(135deg, #1f5134, #2f6b46);
+}
+
+body.dark-mode .grocery-cat-card:nth-child(3) .cat-header {
+  background: linear-gradient(135deg, #665214, #8a6d1d);
+}
+
+body.dark-mode .grocery-cat-card:nth-child(4) .cat-header {
+  background: linear-gradient(135deg, #4b3b14, #6b531c);
+}
+
+body.dark-mode .grocery-cat-card:nth-child(5) .cat-header {
+  background: linear-gradient(135deg, #3e3b6b, #57539b);
+}
+
+/* Grocery empty text */
+body.dark-mode .cat-items {
+  color: #c9d1d9;
+}
+
+/* Grocery item text */
+body.dark-mode .grocery-item span {
+  color: #e6edf3 !important;
+}
+
+/* FORM FIELDS DARK MODE */
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+  background: #0d1117 !important;
+  color: #e6edf3 !important;
+  border-color: #2a2a35 !important;
+}
+
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+  color: #8b949e !important;
+}
