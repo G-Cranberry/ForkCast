@@ -6,72 +6,29 @@
 <title>Forkcast – Scan Your Fridge</title>
 <link rel="stylesheet" href="style.css?v=1.1" />
 <style>
-.scanner-container {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 1.5rem; max-width: 800px; margin: 0 auto;
-}
-.video-wrapper {
-  position: relative; width: 100%; max-width: 640px;
-  border-radius: 20px; overflow: hidden; box-shadow: var(--shadow);
-  background: #000; aspect-ratio: 4/3;
-}
-#camera-feed { width: 100%; height: 100%; object-fit: cover; display: block; }
-#detection-canvas {
-  position: absolute; top: 0; left: 0;
-  width: 100%; height: 100%; pointer-events: none;
-}
-.detected-list {
-  width: 100%; max-width: 640px; background: white;
-  border-radius: 20px; padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(255,143,163,0.1); display: none;
-}
-.detected-item {
-  display: flex; align-items: center; gap: 1rem; padding: 0.8rem;
-  border-bottom: 1px solid #f0f0f0; font-size: 1.1rem;
-  font-weight: 700; color: var(--text);
-}
-.detected-item:last-child { border-bottom: none; }
-.detected-item input[type="checkbox"] {
-  width: 20px; height: 20px; accent-color: var(--accent); cursor: pointer;
-}
-.item-label { text-transform: capitalize; }
-.confidence-badge {
-  margin-left: auto; font-size: 0.75rem; font-weight: 600;
-  background: #fff0f3; color: #ff5c7c;
-  padding: 0.2rem 0.6rem; border-radius: 20px;
-}
-.action-modal {
-  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
-  display: none; align-items: center; justify-content: center; z-index: 10000;
-}
-.action-modal-content {
-  background: white; padding: 2.5rem; border-radius: 24px;
-  text-align: center; max-width: 400px; width: 90%;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-}
-.action-modal h3 { font-size: 1.8rem; margin-bottom: 1.5rem; font-weight: 900; }
-.action-btn {
-  display: block; width: 100%; margin-bottom: 1rem; padding: 1rem;
-  border-radius: 30px; font-size: 1rem; font-weight: 700; cursor: pointer;
-  border: 2px solid var(--accent); background: white; color: var(--accent);
-  transition: all 0.2s;
-}
-.action-btn:hover { background: var(--accent); color: white; }
-.scan-status { font-size: 0.9rem; color: var(--muted); text-align: center; min-height: 1.5rem; }
-.scan-status.error { color: #e74c3c; }
-.scan-status.success { color: #27ae60; }
-.api-attribution {
-  position: fixed; bottom: 15px; right: 20px; font-size: 0.75rem;
-  color: var(--muted); background: rgba(255,255,255,0.9);
-  padding: 0.5rem 0.8rem; border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 100;
-}
-.api-attribution a { color: var(--accent); text-decoration: none; font-weight: 700; }
-body.dark-mode .detected-list,
-body.dark-mode .action-modal-content { background: var(--bg2); color: var(--text); }
-body.dark-mode .detected-item { border-color: var(--border); }
-body.dark-mode .api-attribution { background: rgba(0,0,0,0.8); color: #aaa; }
+.scanner-container { display:flex; flex-direction:column; align-items:center; gap:1.5rem; max-width:800px; margin:0 auto; }
+.video-wrapper { position:relative; width:100%; max-width:640px; border-radius:20px; overflow:hidden; box-shadow:var(--shadow); background:#000; aspect-ratio:4/3; }
+#camera-feed { width:100%; height:100%; object-fit:cover; display:block; }
+#detection-canvas { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
+.detected-list { width:100%; max-width:640px; background:white; border-radius:20px; padding:1.5rem; box-shadow:0 4px 20px rgba(255,143,163,0.1); display:none; }
+.detected-item { display:flex; align-items:center; gap:1rem; padding:0.8rem; border-bottom:1px solid #f0f0f0; font-size:1.1rem; font-weight:700; color:var(--text); }
+.detected-item:last-child { border-bottom:none; }
+.detected-item input[type="checkbox"] { width:20px; height:20px; accent-color:var(--accent); cursor:pointer; }
+.item-label { text-transform:capitalize; }
+.confidence-badge { margin-left:auto; font-size:0.75rem; font-weight:600; background:#fff0f3; color:#ff5c7c; padding:0.2rem 0.6rem; border-radius:20px; }
+.action-modal { position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); backdrop-filter:blur(5px); display:none; align-items:center; justify-content:center; z-index:10000; }
+.action-modal-content { background:white; padding:2.5rem; border-radius:24px; text-align:center; max-width:400px; width:90%; box-shadow:0 10px 40px rgba(0,0,0,0.2); }
+.action-modal h3 { font-size:1.8rem; margin-bottom:1.5rem; font-weight:900; }
+.action-btn { display:block; width:100%; margin-bottom:1rem; padding:1rem; border-radius:30px; font-size:1rem; font-weight:700; cursor:pointer; border:2px solid var(--accent); background:white; color:var(--accent); transition:all 0.2s; }
+.action-btn:hover { background:var(--accent); color:white; }
+.scan-status { font-size:0.9rem; color:var(--muted); text-align:center; min-height:1.5rem; }
+.scan-status.error { color:#e74c3c; }
+.scan-status.success { color:#27ae60; }
+.api-attribution { position:fixed; bottom:15px; right:20px; font-size:0.75rem; color:var(--muted); background:rgba(255,255,255,0.9); padding:0.5rem 0.8rem; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.1); z-index:100; }
+.api-attribution a { color:var(--accent); text-decoration:none; font-weight:700; }
+body.dark-mode .detected-list, body.dark-mode .action-modal-content { background:var(--bg2); color:var(--text); }
+body.dark-mode .detected-item { border-color:var(--border); }
+body.dark-mode .api-attribution { background:rgba(0,0,0,0.8); color:#aaa; }
 </style>
 </head>
 <body>
@@ -80,21 +37,18 @@ body.dark-mode .api-attribution { background: rgba(0,0,0,0.8); color: #aaa; }
   <main class="main">
     <header class="topbar">
       <div class="topbar-left">
-        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
-          <span></span><span></span><span></span>
-        </button>
+        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu"><span></span><span></span><span></span></button>
         <div class="topbar-logo">
           <span class="logo-text"><span class="fork">Fork</span><span class="cast">Cast</span></span>
         </div>
       </div>
       <div class="topbar-right"></div>
     </header>
-
     <div class="page-content fade-up">
       <div class="scanner-container">
-        <h1 class="sec-title" style="margin:0; text-align:center;">Scan Your Fridge 📷</h1>
-        <p style="color:var(--muted); text-align:center; max-width:500px; margin-top:-0.5rem;">
-          Point your camera at ingredients. YOLOv8 AI will identify them!
+        <h1 class="sec-title" style="margin:0;text-align:center;">Scan Your Fridge 📷</h1>
+        <p style="color:var(--muted);text-align:center;max-width:500px;margin-top:-0.5rem;">
+          Point your camera at ingredients. Google Vision AI will identify them!
         </p>
         <div class="video-wrapper">
           <video id="camera-feed" autoplay playsinline muted></video>
@@ -105,16 +59,12 @@ body.dark-mode .api-attribution { background: rgba(0,0,0,0.8); color: #aaa; }
         </div>
         <p id="scan-status" class="scan-status"></p>
         <button id="scan-btn" class="btn-primary" style="padding:1rem 3rem;font-size:1.2rem;display:none;">
-          🔍 Scan with YOLOv8
+          🔍 Scan Ingredients
         </button>
         <div class="detected-list" id="detected-list-container">
-          <h3 style="margin-top:0;font-weight:800;border-bottom:2px solid var(--border);padding-bottom:0.5rem;">
-            🥦 Detected Ingredients
-          </h3>
+          <h3 style="margin-top:0;font-weight:800;border-bottom:2px solid var(--border);padding-bottom:0.5rem;">🥦 Detected Ingredients</h3>
           <div id="items-list"></div>
-          <button id="confirm-btn" class="btn-primary" style="width:100%;margin-top:1.5rem;">
-            Confirm Selection ✓
-          </button>
+          <button id="confirm-btn" class="btn-primary" style="width:100%;margin-top:1.5rem;">Confirm Selection ✓</button>
         </div>
       </div>
     </div>
@@ -124,61 +74,53 @@ body.dark-mode .api-attribution { background: rgba(0,0,0,0.8); color: #aaa; }
 <div class="action-modal" id="action-modal">
   <div class="action-modal-content">
     <h3>What's next?</h3>
-    <p style="color:var(--muted);margin-bottom:1.5rem;">
-      You've selected <span id="item-count" style="font-weight:800;color:var(--text);">0</span> items.
-    </p>
+    <p style="color:var(--muted);margin-bottom:1.5rem;">You've selected <span id="item-count" style="font-weight:800;color:var(--text);">0</span> items.</p>
     <button class="action-btn" id="btn-add-inventory">📥 Add to Fridge Inventory</button>
     <button class="action-btn" id="btn-create-recipe">🍳 Create a Recipe</button>
     <button class="action-btn" id="btn-do-both" style="background:var(--accent);color:white;border-color:var(--accent);">✨ Do Both</button>
-    <button class="action-btn" style="border:none;color:var(--muted);margin-top:1rem;"
-      onclick="document.getElementById('action-modal').style.display='none'">Cancel</button>
+    <button class="action-btn" style="border:none;color:var(--muted);margin-top:1rem;" onclick="document.getElementById('action-modal').style.display='none'">Cancel</button>
   </div>
 </div>
 
-<div class="api-attribution">
-  Powered by <a href="https://roboflow.com" target="_blank">Roboflow</a> &amp;
-  <a href="https://ultralytics.com/yolov8" target="_blank">YOLOv8</a>
-</div>
+<div class="api-attribution">Powered by <a href="https://cloud.google.com/vision" target="_blank">Google Cloud Vision</a></div>
 
 <script src="main.js"></script>
 <script>
-// ============================================================
-// STEP 1: Fill these 3 values with your Roboflow details
-// Get free API key at: https://app.roboflow.com/settings/api
-// Find food models at:  https://universe.roboflow.com (search "vegetable detection")
-// ============================================================
-const ROBOFLOW_API_KEY = "YOUR_API_KEY_HERE";   // paste your key
-const MODEL_ID         = "vegetable-detection"; // your model's ID
-const MODEL_VERSION    = "1";                   // your model's version number
+const VISION_API_KEY = "AIzaSyBGI59FWSmny5zH3C5V4V";
 
-// ============================================================
-// GROCERY VOCAB — for category mapping
-// ============================================================
+const FOOD_LABELS = new Set([
+  'apple','banana','mango','orange','grapes','watermelon','strawberry','pomegranate',
+  'pineapple','papaya','kiwi','lemon','lime','pear','peach','plum','cherry',
+  'coconut','tomato','potato','onion','garlic','ginger','carrot','broccoli',
+  'cauliflower','spinach','cabbage','capsicum','bell pepper','cucumber','zucchini',
+  'peas','corn','beetroot','mushroom','radish','eggplant','lettuce','celery',
+  'asparagus','pumpkin','sweet potato','chilli','pepper','fruit','vegetable',
+  'produce','food','ingredient','rice','wheat','bread','pasta','oats','flour',
+  'noodles','milk','cheese','butter','paneer','cream','egg','meat','chicken',
+  'fish','lentils','chickpeas','beans','dal','herb','spice','sauce','oil',
+  'avocado','blueberry','raspberry','blackberry','melon','grape','fig','date',
+  'walnut','almond','cashew','peanut','sesame','sunflower seed','nut','seed',
+  'leek','spring onion','turnip','parsnip','swede','courgette','aubergine',
+  'coriander','parsley','basil','mint','thyme','rosemary','bay leaf','turmeric',
+  'cumin','cardamom','cinnamon','clove','saffron','chili','jalapeno'
+]);
+
 const GROCERY_VOCAB = {
-  fruits:  ['apple','banana','mango','orange','grapes','watermelon','strawberry',
-             'pomegranate','pineapple','papaya','kiwi','lemon','lime','pear',
-             'peach','plum','cherry','blueberry','raspberry','coconut'],
-  veggies: ['tomato','potato','onion','garlic','ginger','carrot','broccoli',
-             'cauliflower','spinach','cabbage','capsicum','bell pepper','cucumber',
-             'zucchini','peas','corn','beetroot','mushroom','radish','eggplant',
-             'lettuce','celery','asparagus','pumpkin','sweet potato','chilli','pepper'],
-  grains:  ['rice','wheat','bread','pasta','oats','flour','noodles','quinoa',
-             'barley','maize','roti','cereal','poha','semolina','cornflakes'],
-  pulses:  ['lentils','dal','chickpeas','rajma','moong','kidney beans','black beans',
-             'soybeans','chana','urad dal','masoor dal'],
-  milk:    ['milk','curd','yogurt','cheese','butter','paneer','cream','ghee',
-             'ice cream','condensed milk']
+  fruits:  ['apple','banana','mango','orange','grapes','watermelon','strawberry','pomegranate','pineapple','papaya','kiwi','lemon','lime','pear','peach','plum','cherry','coconut','blueberry','raspberry','avocado','fig','date','melon'],
+  veggies: ['tomato','potato','onion','garlic','ginger','carrot','broccoli','cauliflower','spinach','cabbage','capsicum','bell pepper','cucumber','zucchini','peas','corn','beetroot','mushroom','radish','eggplant','lettuce','celery','asparagus','pumpkin','sweet potato','chilli','pepper','leek','spring onion','courgette','aubergine','coriander','parsley','basil','mint','herb'],
+  grains:  ['rice','wheat','bread','pasta','oats','flour','noodles','quinoa','barley','maize','cereal'],
+  pulses:  ['lentils','dal','chickpeas','rajma','moong','kidney beans','black beans','soybeans','chana','beans'],
+  milk:    ['milk','curd','yogurt','cheese','butter','paneer','cream','ghee','egg']
 };
 
-function getCategory(itemName) {
-  const lower = itemName.toLowerCase();
+function getCategory(name) {
+  const lower = name.toLowerCase();
   for (const [cat, items] of Object.entries(GROCERY_VOCAB)) {
     if (items.some(i => lower.includes(i) || i.includes(lower))) return cat;
   }
   return 'veggies';
 }
 
-// DOM elements
 const video         = document.getElementById('camera-feed');
 const canvas        = document.getElementById('detection-canvas');
 const ctx           = canvas.getContext('2d');
@@ -191,12 +133,11 @@ const confirmBtn    = document.getElementById('confirm-btn');
 const actionModal   = document.getElementById('action-modal');
 let selectedItems   = [];
 
-function setStatus(msg, type = '') {
+function setStatus(msg, type='') {
   scanStatus.textContent = msg;
-  scanStatus.className = 'scan-status' + (type ? ` ${type}` : '');
+  scanStatus.className = 'scan-status' + (type ? ' '+type : '');
 }
 
-// Start camera
 async function initCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -204,7 +145,7 @@ async function initCamera() {
     });
     video.srcObject = stream;
     video.onloadedmetadata = () => {
-      canvas.width  = video.videoWidth;
+      canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       loadingBadge.style.display = 'none';
       scanBtn.style.display = 'inline-block';
@@ -212,68 +153,125 @@ async function initCamera() {
     };
   } catch (err) {
     loadingBadge.innerText = '❌ Camera access denied.';
-    setStatus('Camera access denied. Please allow permissions.', 'error');
+    setStatus('Camera access denied.', 'error');
   }
 }
 
-// Capture current video frame as base64 JPEG
 function captureFrame() {
   const tmp = document.createElement('canvas');
-  tmp.width  = video.videoWidth;
+  tmp.width = video.videoWidth;
   tmp.height = video.videoHeight;
   tmp.getContext('2d').drawImage(video, 0, 0);
   return tmp.toDataURL('image/jpeg', 0.85).split(',')[1];
 }
 
-// Call Roboflow YOLOv8 API
-async function runYOLOv8(base64) {
-  const url = `https://detect.roboflow.com/${MODEL_ID}/${MODEL_VERSION}?api_key=${ROBOFLOW_API_KEY}&confidence=40&overlap=30`;
-  const res  = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: base64
-  });
-  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
-  const data = await res.json();
-  return data.predictions || [];
-}
-
-// Draw bounding boxes
-function drawBoxes(predictions) {
-  canvas.width  = video.videoWidth;
-  canvas.height = video.videoHeight;
+async function analyzeFrame() {
+  if (!video.videoWidth) { setStatus('Camera not ready.', 'error'); return; }
+  scanBtn.disabled = true;
+  scanBtn.innerText = '⏳ Scanning...';
+  setStatus('Analysing with Google Vision AI...');
+  listContainer.style.display = 'none';
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  predictions.forEach(pred => {
-    const x = pred.x - pred.width / 2;
-    const y = pred.y - pred.height / 2;
-    const label = `${pred.class} ${Math.round(pred.confidence * 100)}%`;
-    ctx.strokeStyle = '#ff8fa3';
-    ctx.lineWidth   = 3;
-    ctx.strokeRect(x, y, pred.width, pred.height);
-    ctx.font = 'bold 15px Inter, sans-serif';
-    const tw = ctx.measureText(label).width;
-    ctx.fillStyle = '#ff8fa3';
-    ctx.fillRect(x, y - 28, tw + 16, 28);
-    ctx.fillStyle = '#fff';
-    ctx.fillText(label, x + 8, y - 8);
-  });
+
+  try {
+    const base64 = captureFrame();
+    const res = await fetch(
+      `https://vision.googleapis.com/v1/images:annotate?key=${VISION_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requests: [{
+            image: { content: base64 },
+            features: [
+              { type: 'LABEL_DETECTION', maxResults: 20 },
+              { type: 'OBJECT_LOCALIZATION', maxResults: 15 }
+            ]
+          }]
+        })
+      }
+    );
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+
+    const response = data.responses[0];
+    const labels   = response.labelAnnotations || [];
+    const objects  = response.localizedObjectAnnotations || [];
+
+    // Filter food-related labels
+    const foodItems = [];
+    const seen = new Set();
+
+    // From object localization (has bounding boxes)
+    objects.forEach(obj => {
+      const name = obj.name.toLowerCase();
+      if (!seen.has(name)) {
+        seen.add(name);
+        foodItems.push({ name: obj.name, score: obj.score, bbox: obj.boundingPoly });
+      }
+    });
+
+    // From label detection
+    labels.forEach(label => {
+      const name = label.description.toLowerCase();
+      const isFood = FOOD_LABELS.has(name) ||
+        Array.from(FOOD_LABELS).some(f => name.includes(f) || f.includes(name));
+      if (isFood && !seen.has(name) && label.score > 0.6) {
+        seen.add(name);
+        foodItems.push({ name: label.description, score: label.score, bbox: null });
+      }
+    });
+
+    if (foodItems.length === 0) {
+      setStatus('No food items detected. Try better lighting or hold item closer.', 'error');
+    } else {
+      // Draw bounding boxes for objects that have them
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      foodItems.forEach(item => {
+        if (item.bbox && item.bbox.normalizedVertices) {
+          const verts = item.bbox.normalizedVertices;
+          const x = verts[0].x * canvas.width;
+          const y = verts[0].y * canvas.height;
+          const w = (verts[2].x - verts[0].x) * canvas.width;
+          const h = (verts[2].y - verts[0].y) * canvas.height;
+          ctx.strokeStyle = '#ff8fa3';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(x, y, w, h);
+          const label = `${item.name} ${Math.round(item.score * 100)}%`;
+          ctx.font = 'bold 15px Inter, sans-serif';
+          const tw = ctx.measureText(label).width;
+          ctx.fillStyle = '#ff8fa3';
+          ctx.fillRect(x, y - 28, tw + 16, 28);
+          ctx.fillStyle = '#fff';
+          ctx.fillText(label, x + 8, y - 8);
+        }
+      });
+
+      populateList(foodItems);
+      setStatus(`✅ Found ${foodItems.length} ingredient(s)!`, 'success');
+    }
+  } catch (err) {
+    setStatus('❌ Error: ' + err.message, 'error');
+  }
+
+  scanBtn.disabled = false;
+  scanBtn.innerText = '🔍 Scan Ingredients';
 }
 
-// Show detected items as checkboxes
-function populateList(predictions) {
-  const seen   = new Set();
-  const unique = predictions.filter(p => seen.has(p.class) ? false : seen.add(p.class));
+function populateList(items) {
   itemsList.innerHTML = '';
-  unique.forEach((pred, i) => {
+  items.forEach((item, i) => {
     const div = document.createElement('div');
     div.className = 'detected-item';
     div.innerHTML = `
-      <input type="checkbox" id="item-${i}" value="${pred.class}" checked>
+      <input type="checkbox" id="item-${i}" value="${item.name}" checked>
       <label class="item-label" for="item-${i}">
-        ${pred.class}
-        <span style="color:var(--muted);font-size:0.82rem;font-weight:normal;">(${getCategory(pred.class)})</span>
+        ${item.name}
+        <span style="color:var(--muted);font-size:0.82rem;font-weight:normal;">(${getCategory(item.name)})</span>
       </label>
-      <span class="confidence-badge">${Math.round(pred.confidence * 100)}%</span>
+      <span class="confidence-badge">${Math.round(item.score * 100)}%</span>
     `;
     itemsList.appendChild(div);
   });
@@ -281,39 +279,6 @@ function populateList(predictions) {
   listContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// Main scan button handler
-async function analyzeFrame() {
-  if (!video.videoWidth) { setStatus('Camera not ready.', 'error'); return; }
-
-  if (ROBOFLOW_API_KEY === "YOUR_API_KEY_HERE") {
-    alert('Please add your Roboflow API key in scanner.html!\n\nGet it free at: app.roboflow.com/settings/api');
-    return;
-  }
-
-  scanBtn.disabled = true;
-  scanBtn.innerText = '⏳ Scanning...';
-  setStatus('Running YOLOv8...');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  listContainer.style.display = 'none';
-
-  try {
-    const predictions = await runYOLOv8(captureFrame());
-    if (predictions.length === 0) {
-      setStatus('Nothing detected. Try better lighting or hold item closer.', 'error');
-    } else {
-      drawBoxes(predictions);
-      populateList(predictions);
-      setStatus(`✅ Found ${predictions.length} item(s)!`, 'success');
-    }
-  } catch (err) {
-    setStatus(`❌ ${err.message}`, 'error');
-  }
-
-  scanBtn.disabled = false;
-  scanBtn.innerText = '🔍 Scan with YOLOv8';
-}
-
-// Confirm selection
 confirmBtn.addEventListener('click', () => {
   const checked = itemsList.querySelectorAll('input[type="checkbox"]:checked');
   selectedItems = Array.from(checked).map(cb => cb.value);
@@ -327,7 +292,7 @@ function addToInventory() {
   ['fruits','veggies','grains','pulses','milk','other'].forEach(c => { if (!inv[c]) inv[c] = []; });
   selectedItems.forEach(item => {
     const cat = getCategory(item);
-    const t   = inv[cat] ? cat : 'other';
+    const t = inv[cat] ? cat : 'other';
     if (!inv[t].some(i => i.text.toLowerCase() === item.toLowerCase())) {
       inv[t].push({ id: `${t}_${Date.now()}`, text: item, weight: '1x', done: false });
     }
