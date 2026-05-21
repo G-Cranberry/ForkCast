@@ -2,8 +2,8 @@
 
 /* ---------- VARIABLES (Dark Default) ---------- */
 :root {
-  --bg: #121212;
-  --bg2: #1a1a1a;
+  --bg: #f5f0eb;
+  --bg2: #ede8e3;
   --card: rgba(255,255,255,0.06);
   --card-border: rgba(255,255,255,0.1);
   --text: #f1f1f1;
