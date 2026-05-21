@@ -158,6 +158,9 @@ select, input { font-family: inherit; }
   backdrop-filter: blur(2px);
 }
 .sidebar-overlay.show { display: block; }
+.app-wrap.menu-active .sidebar {
+  transform: translateX(0) !important;
+}
 
 /* ---------- MAIN ---------- */
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
