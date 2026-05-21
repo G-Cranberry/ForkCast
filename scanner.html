@@ -6,6 +6,8 @@
 <title>Forkcast – Scan Your Fridge</title>
 <link rel="stylesheet" href="style.css?v=1.1" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
 <style>
 .scanner-container {
   display: flex;
@@ -33,82 +35,80 @@
 }
 #detection-canvas {
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  pointer-events: none;
-}
-.camera-placeholder {
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: #111;
-  color: #aaa;
-  font-size: 1rem;
-  gap: 1rem;
-  cursor: pointer;
+  pointer-events: none;
 }
-.camera-placeholder .icon { font-size: 3rem; }
-.snap-overlay {
-  position: absolute;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
+.upload-zone {
+  width: 100%;
+  max-width: 640px;
+  border: 3px dashed var(--accent);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(255,143,163,0.05);
+  transition: background 0.2s;
+}
+.upload-zone:hover { background: rgba(255,143,163,0.12); }
+.upload-zone p { color: var(--muted); margin: 0.5rem 0 0; }
+#preview-img {
+  width: 100%;
+  max-width: 640px;
+  border-radius: 20px;
   display: none;
-  gap: 1rem;
+  box-shadow: var(--shadow);
 }
-.snap-btn {
-  background: var(--accent, #ff8fa3);
-  color: white;
-  border: none;
-  padding: 0.8rem 2rem;
-  border-radius: 30px;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 20px rgba(255,143,163,0.4);
-}
-.snap-btn:hover { opacity: 0.85; }
-.ingredients-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 0.6rem;
+.detected-list {
   width: 100%;
   max-width: 640px;
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(255,143,163,0.1);
+  display: none;
 }
-.ing-chip {
+.detected-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  background: var(--bg2, #f8f0f4);
-  border: 2px solid transparent;
-  border-radius: 12px;
-  padding: 0.6rem 0.8rem;
+  gap: 1rem;
+  padding: 0.8rem;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.detected-item:last-child { border-bottom: none; }
+.detected-item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
   cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text, #333);
-  transition: all 0.15s;
-  user-select: none;
 }
-.ing-chip input { display: none; }
-.ing-chip.checked {
-  border-color: var(--accent, #ff8fa3);
-  background: rgba(255,143,163,0.12);
-  color: var(--accent, #ff8fa3);
-}
-.section-label {
+.item-label { text-transform: capitalize; }
+.tab-row {
+  display: flex;
+  gap: 1rem;
   width: 100%;
   max-width: 640px;
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--muted, #999);
-  margin-top: 0.5rem;
-  margin-bottom: 0.2rem;
+}
+.tab-btn {
+  flex: 1;
+  padding: 0.8rem;
+  border-radius: 30px;
+  border: 2px solid var(--accent);
+  background: white;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tab-btn.active, .tab-btn:hover {
+  background: var(--accent);
+  color: white;
 }
 .action-modal {
   position: fixed;
@@ -140,22 +140,35 @@
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
-  border: 2px solid var(--accent, #ff8fa3);
+  border: 2px solid var(--accent);
   background: white;
-  color: var(--accent, #ff8fa3);
+  color: var(--accent);
   transition: all 0.2s;
 }
-.action-btn:hover { background: var(--accent, #ff8fa3); color: white; }
-body.dark-mode .action-modal-content,
-body.dark-mode .ing-chip { background: var(--bg2); color: var(--text); }
-body.dark-mode .ing-chip.checked { background: rgba(255,143,163,0.2); }
+.action-btn:hover { background: var(--accent); color: white; }
+.status-msg {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  min-height: 1.5rem;
+  text-align: center;
+}
+body.dark-mode .detected-list,
+body.dark-mode .action-modal-content {
+  background: var(--bg2);
+  color: var(--text);
+}
+body.dark-mode .detected-item { border-color: var(--border); }
+body.dark-mode .upload-zone { background: rgba(255,143,163,0.08); }
 </style>
 </head>
 <body>
 <div class="app-wrap">
+
   <aside class="sidebar" id="sidebar">
     <nav class="sidebar-nav"></nav>
   </aside>
+
   <main class="main">
     <header class="topbar">
       <div class="topbar-left">
@@ -171,65 +184,56 @@ body.dark-mode .ing-chip.checked { background: rgba(255,143,163,0.2); }
 
     <div class="page-content fade-up">
       <div class="scanner-container">
+
         <h1 class="sec-title" style="margin:0; text-align:center;">Scan Your Fridge 📷</h1>
         <p style="color:var(--muted); text-align:center; max-width:500px; margin-top:-0.5rem;">
-          Use your camera or upload a photo, then tick what you see. We'll find matching recipes instantly!
+          Use your camera OR upload a photo — Google Vision AI will identify ingredients automatically!
         </p>
 
-        <!-- Camera / Upload -->
-        <div class="video-wrapper" id="video-wrapper">
-          <video id="camera-feed" autoplay playsinline muted style="display:none;"></video>
-          <canvas id="detection-canvas"></canvas>
-
-          <!-- Default state: two options -->
-          <div class="camera-placeholder" id="placeholder">
-            <span class="icon">📷</span>
-            <span>Tap to use Camera or Upload Photo</span>
-            <div style="display:flex; gap:1rem; margin-top:0.5rem;">
-              <button class="snap-btn" onclick="startCamera()" style="display:inline-block;">📹 Camera</button>
-              <label class="snap-btn" style="display:inline-block; cursor:pointer;">
-                🖼️ Upload
-                <input type="file" accept="image/*" id="upload-input" style="display:none;" onchange="handleUpload(event)">
-              </label>
-            </div>
-          </div>
-
-          <!-- Snap button shown when camera is live -->
-          <div class="snap-overlay" id="snap-overlay">
-            <button class="snap-btn" onclick="captureFrame()">📸 Snap & Identify</button>
-            <button class="snap-btn" style="background:#555;" onclick="stopCamera()">✕ Stop</button>
-          </div>
-
-          <!-- Uploaded image preview -->
-          <img id="uploaded-preview" style="display:none; width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0;" />
+        <!-- TAB SWITCHER -->
+        <div class="tab-row">
+          <button class="tab-btn active" id="tab-camera" onclick="switchTab('camera')">📷 Live Camera</button>
+          <button class="tab-btn" id="tab-upload" onclick="switchTab('upload')">🖼️ Upload Photo</button>
         </div>
 
-        <!-- Analyze button (shown after snap/upload) -->
-        <button id="analyze-btn" class="btn-primary" style="display:none; padding:1rem 3rem; font-size:1.1rem;" onclick="showIngredientPicker()">
-          🔍 Identify Ingredients
-        </button>
-
-        <!-- Ingredient Picker -->
-        <div id="ingredient-section" style="display:none; width:100%; max-width:640px;">
-          <p style="color:var(--muted); font-size:0.9rem; text-align:center; margin-bottom:1rem;">
-            Tick everything you can see in your photo:
-          </p>
-
-          <div class="section-label">🍎 Fruits</div>
-          <div class="ingredients-grid" id="grid-fruits"></div>
-
-          <div class="section-label">🥦 Vegetables</div>
-          <div class="ingredients-grid" id="grid-veggies"></div>
-
-          <div class="section-label">🌾 Grains & Dairy</div>
-          <div class="ingredients-grid" id="grid-grains"></div>
-
-          <div class="section-label">🫘 Pulses & Protein</div>
-          <div class="ingredients-grid" id="grid-pulses"></div>
-
-          <button id="confirm-btn" class="btn-primary" style="width:100%; margin-top:1.5rem;">
-            ✅ Confirm Selection
+        <!-- CAMERA SECTION -->
+        <div id="camera-section" style="width:100%; max-width:640px;">
+          <div class="video-wrapper">
+            <video id="camera-feed" autoplay playsinline muted></video>
+            <canvas id="detection-canvas"></canvas>
+            <div id="loading-model" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:white; font-weight:bold; background:rgba(0,0,0,0.6); padding:1rem; border-radius:12px;">
+              Starting Camera...
+            </div>
+          </div>
+          <button id="scan-btn" class="btn-primary" style="width:100%; margin-top:1rem; padding:1rem; font-size:1.1rem; display:none;">
+            🔍 Identify with AI (Vision API)
           </button>
+        </div>
+
+        <!-- UPLOAD SECTION -->
+        <div id="upload-section" style="width:100%; max-width:640px; display:none;">
+          <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+            <div style="font-size:3rem;">📁</div>
+            <strong style="font-size:1.2rem;">Click to upload a photo</strong>
+            <p>JPG, PNG, WEBP supported</p>
+          </div>
+          <input type="file" id="file-input" accept="image/*" style="display:none;" />
+          <img id="preview-img" alt="Preview" />
+          <button id="upload-scan-btn" class="btn-primary" style="width:100%; margin-top:1rem; padding:1rem; font-size:1.1rem; display:none;">
+            🔍 Identify with AI (Vision API)
+          </button>
+        </div>
+
+        <!-- STATUS -->
+        <div class="status-msg" id="status-msg"></div>
+
+        <!-- DETECTED ITEMS -->
+        <div class="detected-list" id="detected-list-container">
+          <h3 style="margin-top:0; font-weight:800; border-bottom:2px solid var(--border); padding-bottom:0.5rem;">
+            Detected Ingredients ✅
+          </h3>
+          <div id="items-list"></div>
+          <button id="confirm-btn" class="btn-primary" style="width:100%; margin-top:1.5rem;">Confirm Selection</button>
         </div>
 
       </div>
@@ -237,161 +241,240 @@ body.dark-mode .ing-chip.checked { background: rgba(255,143,163,0.2); }
   </main>
 </div>
 
-<!-- Action Modal -->
+<!-- ACTION MODAL -->
 <div class="action-modal" id="action-modal">
   <div class="action-modal-content">
     <h3>What's next?</h3>
     <p style="color:var(--muted); margin-bottom:1.5rem;">
-      You selected <span id="item-count" style="font-weight:800; color:var(--text);">0</span> items.
+      You've selected <span id="item-count" style="font-weight:800; color:var(--text);">0</span> items.
     </p>
     <button class="action-btn" id="btn-add-inventory">📥 Add to Fridge Inventory</button>
-    <button class="action-btn" id="btn-create-recipe">🍳 Find Matching Recipes</button>
-    <button class="action-btn" id="btn-do-both" style="background:var(--accent,#ff8fa3); color:white; border-color:var(--accent,#ff8fa3);">✨ Do Both</button>
-    <button class="action-btn" style="border:none; color:var(--muted);" onclick="document.getElementById('action-modal').style.display='none'">Cancel</button>
+    <button class="action-btn" id="btn-create-recipe">🍳 Find Recipes</button>
+    <button class="action-btn" id="btn-do-both" style="background:var(--accent); color:white; border-color:var(--accent);">✨ Do Both</button>
+    <button class="action-btn" style="border:none; color:var(--muted); margin-top:1rem;"
+      onclick="document.getElementById('action-modal').style.display='none'">Cancel</button>
   </div>
 </div>
 
 <script src="main.js"></script>
 <script>
-// ── DATA ────────────────────────────────────────────────────
+
+// ============================================================
+// 🔑 GOOGLE VISION API KEY — YAHAN APNI KEY DAALO
+// ============================================================
+const VISION_API_KEY = 'AIzaSyBGi59FWSmny5zH3C5V4VABBfhFd739ihQ';
+// ============================================================
+
+const VISION_API_URL = `https://vision.googleapis.com/v1/images:annotate?key=${VISION_API_KEY}`;
+
 const GROCERY_VOCAB = {
-  fruits:  ['Apple','Banana','Mango','Orange','Grapes','Watermelon','Strawberry','Pomegranate','Pineapple','Papaya','Kiwi','Lemon','Lime','Pear','Peach','Coconut'],
-  veggies: ['Tomato','Potato','Onion','Garlic','Ginger','Carrot','Broccoli','Cauliflower','Spinach','Cabbage','Capsicum','Cucumber','Zucchini','Peas','Corn','Mushroom','Eggplant','Beetroot','Pumpkin','Sweet Potato'],
-  grains:  ['Rice','Wheat Flour','Bread','Pasta','Oats','Noodles','Paneer','Milk','Butter','Cheese','Ghee','Yogurt','Eggs'],
-  pulses:  ['Lentils (Dal)','Chickpeas','Rajma','Moong','Kidney Beans','Black Beans','Soybeans','Urad Dal','Masoor Dal','Tofu']
+  fruits: ['apple','banana','mango','orange','grapes','watermelon','strawberry','pomegranate','pineapple','papaya','kiwi','lemon','lime','pear','peach','plum','cherry','blueberry','raspberry','coconut'],
+  veggies: ['tomato','potato','onion','garlic','ginger','carrot','broccoli','cauliflower','spinach','cabbage','capsicum','cucumber','zucchini','peas','corn','beetroot','mushroom','radish','eggplant','lettuce','celery','asparagus','pumpkin','sweet potato'],
+  grains: ['rice','wheat','bread','pasta','oats','flour','noodles','quinoa','barley','roti','cereal','poha','semolina'],
+  pulses: ['lentils','dal','chickpeas','rajma','moong','kidney beans','black beans','chana','urad dal','masoor dal'],
+  milk: ['milk','curd','yogurt','cheese','butter','paneer','cream','ghee','condensed milk']
 };
 
-function getCategory(item) {
-  const lower = item.toLowerCase();
+const ALL_GROCERY_ITEMS = [];
+Object.values(GROCERY_VOCAB).forEach(items => items.forEach(i => ALL_GROCERY_ITEMS.push(i)));
+
+function getCategory(itemName) {
+  const lower = itemName.toLowerCase();
   for (const [cat, items] of Object.entries(GROCERY_VOCAB)) {
-    if (items.some(i => i.toLowerCase() === lower)) return cat;
+    if (items.some(i => lower.includes(i) || i.includes(lower))) return cat;
   }
-  return 'grains';
+  return 'other';
 }
 
-// ── BUILD CHIP GRIDS ──────────────────────────────────────
-function buildGrids() {
-  const gridMap = { fruits: 'grid-fruits', veggies: 'grid-veggies', grains: 'grid-grains', pulses: 'grid-pulses' };
-  for (const [cat, gridId] of Object.entries(gridMap)) {
-    const grid = document.getElementById(gridId);
-    GROCERY_VOCAB[cat].forEach(item => {
-      const chip = document.createElement('label');
-      chip.className = 'ing-chip';
-      chip.innerHTML = `<input type="checkbox" value="${item}"><span>${item}</span>`;
-      chip.addEventListener('click', () => chip.classList.toggle('checked'));
-      chip.querySelector('input').addEventListener('change', () => {}); // just for form compat
-      grid.appendChild(chip);
+function matchToGrocery(labels) {
+  const matched = new Set();
+  labels.forEach(label => {
+    const lower = label.toLowerCase();
+    ALL_GROCERY_ITEMS.forEach(item => {
+      if (lower.includes(item) || item.includes(lower)) matched.add(item);
     });
-  }
+  });
+  return Array.from(matched).slice(0, 8);
 }
-buildGrids();
 
-// ── CAMERA ────────────────────────────────────────────────
-let stream = null;
+// ---- TAB SWITCHING ----
+let activeTab = 'camera';
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('camera-section').style.display = tab === 'camera' ? 'block' : 'none';
+  document.getElementById('upload-section').style.display  = tab === 'upload'  ? 'block' : 'none';
+  document.getElementById('tab-camera').classList.toggle('active', tab === 'camera');
+  document.getElementById('tab-upload').classList.toggle('active', tab === 'upload');
+  document.getElementById('detected-list-container').style.display = 'none';
+  document.getElementById('status-msg').innerText = '';
+}
 
-async function startCamera() {
+// ---- CAMERA ----
+const video   = document.getElementById('camera-feed');
+const canvas  = document.getElementById('detection-canvas');
+const ctx     = canvas.getContext('2d');
+const scanBtn = document.getElementById('scan-btn');
+const loadingBadge = document.getElementById('loading-model');
+
+async function initCamera() {
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
-    const video = document.getElementById('camera-feed');
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
     video.srcObject = stream;
-    video.style.display = 'block';
-    document.getElementById('placeholder').style.display = 'none';
-    document.getElementById('snap-overlay').style.display = 'flex';
-    document.getElementById('uploaded-preview').style.display = 'none';
-    document.getElementById('analyze-btn').style.display = 'none';
-    document.getElementById('ingredient-section').style.display = 'none';
-  } catch(e) {
-    alert('Camera permission denied. Please allow camera access or use the Upload option.');
+    video.onloadedmetadata = () => {
+      canvas.width  = video.videoWidth;
+      canvas.height = video.videoHeight;
+      loadingBadge.style.display = 'none';
+      scanBtn.style.display = 'block';
+    };
+  } catch(err) {
+    loadingBadge.innerText = '❌ Camera access denied. Use Upload tab instead.';
   }
 }
 
-function stopCamera() {
-  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-  const video = document.getElementById('camera-feed');
-  video.style.display = 'none';
-  document.getElementById('placeholder').style.display = 'flex';
-  document.getElementById('snap-overlay').style.display = 'none';
-}
-
-function captureFrame() {
-  const video = document.getElementById('camera-feed');
-  const canvas = document.getElementById('detection-canvas');
-  canvas.width = video.videoWidth;
+function captureFrameAsBase64() {
+  canvas.width  = video.videoWidth;
   canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
   ctx.drawImage(video, 0, 0);
-  // Show as image preview
-  const dataUrl = canvas.toDataURL('image/jpeg');
-  const preview = document.getElementById('uploaded-preview');
-  preview.src = dataUrl;
-  preview.style.display = 'block';
-  video.style.display = 'none';
-  document.getElementById('snap-overlay').style.display = 'none';
-  stopCamera();
-  document.getElementById('analyze-btn').style.display = 'inline-block';
+  return canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
 }
 
-function handleUpload(event) {
-  const file = event.target.files[0];
+scanBtn.addEventListener('click', async () => {
+  setStatus('🔍 Analyzing with Google Vision AI...');
+  scanBtn.disabled = true;
+  const base64 = captureFrameAsBase64();
+  const results = await callVisionAPI(base64);
+  scanBtn.disabled = false;
+  if (results.length > 0) {
+    populateList(results);
+    setStatus('✅ Done! Tick what you have.');
+  } else {
+    setStatus('⚠️ Nothing detected. Try better lighting.');
+  }
+});
+
+// ---- UPLOAD ----
+const fileInput     = document.getElementById('file-input');
+const previewImg    = document.getElementById('preview-img');
+const uploadScanBtn = document.getElementById('upload-scan-btn');
+let uploadedBase64  = null;
+
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = (e) => {
-    const preview = document.getElementById('uploaded-preview');
-    preview.src = e.target.result;
-    preview.style.display = 'block';
-    document.getElementById('placeholder').style.display = 'none';
-    document.getElementById('analyze-btn').style.display = 'inline-block';
-    document.getElementById('ingredient-section').style.display = 'none';
-    // Reset all chips
-    document.querySelectorAll('.ing-chip').forEach(c => {
-      c.classList.remove('checked');
-      c.querySelector('input').checked = false;
-    });
+  reader.onload = e => {
+    previewImg.src = e.target.result;
+    previewImg.style.display = 'block';
+    uploadedBase64 = e.target.result.split(',')[1];
+    uploadScanBtn.style.display = 'block';
+    setStatus('');
+    document.getElementById('detected-list-container').style.display = 'none';
   };
   reader.readAsDataURL(file);
-}
+});
 
-function showIngredientPicker() {
-  document.getElementById('ingredient-section').style.display = 'block';
-  document.getElementById('ingredient-section').scrollIntoView({ behavior: 'smooth' });
-  document.getElementById('analyze-btn').style.display = 'none';
-}
-
-// ── CONFIRM ────────────────────────────────────────────────
-let selectedItems = [];
-
-document.getElementById('confirm-btn').addEventListener('click', () => {
-  const checked = document.querySelectorAll('.ing-chip.checked input');
-  selectedItems = Array.from(checked).map(cb => cb.value);
-  if (selectedItems.length === 0) {
-    alert('Please tick at least one ingredient.');
-    return;
+uploadScanBtn.addEventListener('click', async () => {
+  if (!uploadedBase64) return;
+  setStatus('🔍 Analyzing with Google Vision AI...');
+  uploadScanBtn.disabled = true;
+  const results = await callVisionAPI(uploadedBase64);
+  uploadScanBtn.disabled = false;
+  if (results.length > 0) {
+    populateList(results);
+    setStatus('✅ Done! Tick what you have.');
+  } else {
+    setStatus('⚠️ Nothing detected. Try a clearer photo.');
   }
+});
+
+// ---- GOOGLE VISION API CALL ----
+async function callVisionAPI(base64Image) {
+  try {
+    const body = {
+      requests: [{
+        image: { content: base64Image },
+        features: [
+          { type: 'LABEL_DETECTION',   maxResults: 20 },
+          { type: 'OBJECT_LOCALIZATION', maxResults: 15 }
+        ]
+      }]
+    };
+    const res  = await fetch(VISION_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (data.error) {
+      setStatus('❌ API Error: ' + data.error.message);
+      return [];
+    }
+    const response = data.responses[0];
+    const labels   = (response.labelAnnotations  || []).map(l => l.description);
+    const objects  = (response.localizedObjectAnnotations || []).map(o => o.name);
+    const combined = [...new Set([...labels, ...objects])];
+    return matchToGrocery(combined);
+  } catch(err) {
+    setStatus('❌ Network error. Check your API key.');
+    console.error(err);
+    return [];
+  }
+}
+
+// ---- POPULATE LIST ----
+function populateList(items) {
+  const itemsList = document.getElementById('items-list');
+  itemsList.innerHTML = '';
+  items.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'detected-item';
+    div.innerHTML = `
+      <input type="checkbox" id="item-${i}" value="${item}" checked>
+      <label class="item-label" for="item-${i}">
+        ${item}
+        <span style="color:var(--muted); font-size:0.85rem; font-weight:normal;">(${getCategory(item)})</span>
+      </label>`;
+    itemsList.appendChild(div);
+  });
+  const container = document.getElementById('detected-list-container');
+  container.style.display = 'block';
+  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ---- STATUS ----
+function setStatus(msg) {
+  document.getElementById('status-msg').innerText = msg;
+}
+
+// ---- CONFIRM ----
+let selectedItems = [];
+document.getElementById('confirm-btn').addEventListener('click', () => {
+  const checkboxes = document.querySelectorAll('#items-list input[type="checkbox"]:checked');
+  selectedItems = Array.from(checkboxes).map(cb => cb.value);
+  if (selectedItems.length === 0) { alert('Please select at least one item.'); return; }
   document.getElementById('item-count').innerText = selectedItems.length;
   document.getElementById('action-modal').style.display = 'flex';
 });
 
-// ── INVENTORY ──────────────────────────────────────────────
+// ---- INVENTORY ----
 function addToInventory() {
-  let invData = JSON.parse(localStorage.getItem('forkcast_inventory_v1') || '{}');
-  ['fruits','veggies','grains','pulses','other'].forEach(c => { if (!invData[c]) invData[c] = []; });
+  let inv = JSON.parse(localStorage.getItem('forkcast_inventory_v1') || '{}');
+  ['fruits','veggies','grains','pulses','milk','other'].forEach(c => { if (!inv[c]) inv[c] = []; });
   selectedItems.forEach(item => {
     const cat = getCategory(item);
-    const targetCat = invData[cat] ? cat : 'other';
-    if (!invData[targetCat].some(i => i.text.toLowerCase() === item.toLowerCase())) {
-      invData[targetCat].push({
-        id: `${targetCat}_${Date.now()}_${Math.random().toString(36).slice(2)}`,
-        text: item, weight: '1x', done: false
-      });
+    const key = inv[cat] ? cat : 'other';
+    if (!inv[key].some(i => i.text.toLowerCase() === item.toLowerCase())) {
+      inv[key].push({ id: `${key}_${Date.now()}_${Math.random().toString(36).slice(2)}`, text: item, weight: '1x', done: false });
     }
   });
-  localStorage.setItem('forkcast_inventory_v1', JSON.stringify(invData));
+  localStorage.setItem('forkcast_inventory_v1', JSON.stringify(inv));
 }
 
 document.getElementById('btn-add-inventory').addEventListener('click', () => {
   addToInventory();
-  alert(`Added ${selectedItems.length} items to your Fridge Inventory!`);
+  alert(`✅ ${selectedItems.length} items added to Fridge Inventory!`);
   document.getElementById('action-modal').style.display = 'none';
+  document.getElementById('detected-list-container').style.display = 'none';
 });
 
 document.getElementById('btn-create-recipe').addEventListener('click', () => {
@@ -402,6 +485,10 @@ document.getElementById('btn-do-both').addEventListener('click', () => {
   addToInventory();
   window.location.href = `search.html?q=${encodeURIComponent(selectedItems.join(','))}`;
 });
+
+// ---- BOOT ----
+initCamera();
+
 </script>
 </body>
 </html>
