@@ -259,16 +259,32 @@ updateActiveLink();
 })();
 
 // ---- Authentication Logic (Dummy) ----
+// ============================================================
+// AUTH — Firebase se user data read karta hai
+// ============================================================
 const Auth = {
-  getUser: () => JSON.parse(localStorage.getItem('forkcast_user')),
-  setUser: (user) => localStorage.setItem('forkcast_user', JSON.stringify(user)),
-  logout: () => {
-    localStorage.removeItem('forkcast_user');
-    window.location.href = 'index.html';
+  getUser() {
+    const u = localStorage.getItem('forkcast_user');
+    return u ? JSON.parse(u) : null;
   },
-  isLoggedIn: () => !!localStorage.getItem('forkcast_user')
+  setUser(data) {
+    localStorage.setItem('forkcast_user', JSON.stringify(data));
+  },
+  logout() {
+    localStorage.removeItem('forkcast_user');
+    window.location.href = 'signup.html';
+  },
+  isLoggedIn() {
+    return !!localStorage.getItem('forkcast_user');
+  }
 };
 
+// Protected pages — agar login nahi hai toh signup pe bhejo
+const publicPages = ['signup.html', 'login.html', 'index.html'];
+const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+if (!publicPages.includes(currentPage) && !Auth.isLoggedIn()) {
+  window.location.href = 'signup.html';
+}
 // ---- Dynamic Navigation & Header ----
 function updateNav() {
   const nav = document.querySelector('.sidebar-nav');
