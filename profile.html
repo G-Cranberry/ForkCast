@@ -6,6 +6,57 @@
   <title>Your Profile – Forkcast</title>
   <link rel="stylesheet" href="style.css?v=1.1" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <style>
+    @keyframes bunnyPop {
+      from { transform: scale(0.5); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+    @keyframes bunnyBounce {
+      from { transform: translateY(0px); }
+      to   { transform: translateY(-12px); }
+    }
+    #bunny-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+    #bunny-box {
+      background: linear-gradient(135deg, #ffe4ef, #fff0f6);
+      border-radius: 32px;
+      padding: 3rem 2.5rem;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(255,143,163,0.4);
+      max-width: 340px;
+      width: 90%;
+    }
+    #bunny-box.bunny-show {
+      animation: bunnyPop 0.5s cubic-bezier(0.19,1,0.22,1) forwards;
+    }
+    #bunny-svg {
+      animation: bunnyBounce 1s ease-in-out infinite alternate;
+    }
+    .bunny-close-btn {
+      background: linear-gradient(135deg, #ff8fa3, #f472b6);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 0.6rem 2rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(255,143,163,0.4);
+      transition: transform 0.2s;
+      margin-top: 1rem;
+    }
+    .bunny-close-btn:hover {
+      transform: scale(1.05);
+    }
+  </style>
 </head>
 <body>
 
@@ -115,88 +166,33 @@
 </div>
 
 <!-- BUNNY MODAL -->
-<div id="bunny-modal" style="
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.6);
-  backdrop-filter:blur(6px);
-  z-index:9999;
-  justify-content:center;
-  align-items:center;
-">
-  <div id="bunny-box" style="
-    background:linear-gradient(135deg,#ffe4ef,#fff0f6);
-    border-radius:32px;
-    padding:3rem 2.5rem;
-    text-align:center;
-    box-shadow:0 0 60px rgba(255,143,163,0.4);
-    max-width:340px;
-    width:90%;
-  ">
-
-    <svg width="120" height="140" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg" id="bunny-svg" style="animation:bunnyBounce 1s ease-in-out infinite alternate;">
-      <!-- Ears -->
+<div id="bunny-modal">
+  <div id="bunny-box">
+    <svg id="bunny-svg" width="120" height="140" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
       <ellipse cx="38" cy="30" rx="10" ry="28" fill="#ffb6c1"/>
       <ellipse cx="38" cy="30" rx="5" ry="20" fill="#ff8fa3"/>
       <ellipse cx="82" cy="30" rx="10" ry="28" fill="#ffb6c1"/>
       <ellipse cx="82" cy="30" rx="5" ry="20" fill="#ff8fa3"/>
-      <!-- Head -->
       <ellipse cx="60" cy="65" rx="32" ry="30" fill="#fff0f6"/>
-      <!-- Body -->
       <ellipse cx="60" cy="110" rx="28" ry="26" fill="#ffb6c1"/>
-      <!-- Belly -->
       <ellipse cx="60" cy="112" rx="16" ry="14" fill="#fff0f6"/>
-      <!-- Eyes -->
       <circle cx="48" cy="60" r="5" fill="#ff8fa3"/>
       <circle cx="72" cy="60" r="5" fill="#ff8fa3"/>
       <circle cx="49.5" cy="58.5" r="2" fill="white"/>
       <circle cx="73.5" cy="58.5" r="2" fill="white"/>
-      <!-- Nose -->
       <ellipse cx="60" cy="71" rx="4" ry="3" fill="#ff8fa3"/>
-      <!-- Mouth -->
       <path d="M55 75 Q60 80 65 75" stroke="#ff8fa3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-      <!-- Cheeks -->
       <ellipse cx="42" cy="70" rx="7" ry="5" fill="#ffb6c1" opacity="0.5"/>
       <ellipse cx="78" cy="70" rx="7" ry="5" fill="#ffb6c1" opacity="0.5"/>
-      <!-- Arms -->
       <ellipse cx="32" cy="100" rx="8" ry="14" fill="#ffb6c1" transform="rotate(-20,32,100)"/>
       <ellipse cx="88" cy="100" rx="8" ry="14" fill="#ffb6c1" transform="rotate(20,88,100)"/>
-      <!-- Tail -->
       <circle cx="60" cy="134" r="8" fill="white"/>
     </svg>
-
     <h2 style="margin:1.2rem 0 0.5rem; color:#d6336c; font-size:1.5rem; font-family:'Inter',sans-serif; font-weight:800;">Thank You! 🎀</h2>
-    <p style="color:#e0608a; font-size:0.95rem; font-family:'Inter',sans-serif; margin-bottom:1.5rem;">Your feedback means the world to us!</p>
-
-    <button onclick="closeBunny()" style="
-      background:linear-gradient(135deg,#ff8fa3,#f472b6);
-      color:white;
-      border:none;
-      border-radius:50px;
-      padding:0.6rem 2rem;
-      font-size:0.95rem;
-      font-weight:700;
-      cursor:pointer;
-      box-shadow:0 4px 20px rgba(255,143,163,0.4);
-      transition:transform 0.2s;
-    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-      Aww, Thanks! 🐰
-    </button>
-
+    <p style="color:#e0608a; font-size:0.95rem; font-family:'Inter',sans-serif; margin-bottom:1rem;">Your feedback means the world to us!</p>
+    <button class="bunny-close-btn" onclick="closeBunny()">Aww, Thanks! 🐰</button>
   </div>
 </div>
-
-<style>
-  @keyframes bunnyPop {
-    from { transform: scale(0.5); opacity: 0; }
-    to   { transform: scale(1);   opacity: 1; }
-  }
-  @keyframes bunnyBounce {
-    from { transform: translateY(0px); }
-    to   { transform: translateY(-10px); }
-  }
-</style>
 
 <script src="recipes-data.js"></script>
 <script src="main.js"></script>
@@ -225,7 +221,6 @@
     setTimeout(() => toast.classList.remove('show'), 3000);
   }
 
-  // Avatar
   const avatarEditBtn = document.querySelector('.avatar-edit');
   const avatarInput = document.getElementById('avatar-upload');
   avatarEditBtn.addEventListener('click', () => avatarInput.click());
@@ -246,25 +241,24 @@
     }
   });
 
-  // Bunny
   function showBunny() {
     const modal = document.getElementById('bunny-modal');
     const box = document.getElementById('bunny-box');
     modal.style.display = 'flex';
-    box.style.animation = 'none';
-    box.offsetHeight; // force reflow
-    box.style.animation = 'bunnyPop 0.5s cubic-bezier(0.19,1,0.22,1) forwards';
+    box.classList.remove('bunny-show');
+    void box.offsetWidth;
+    box.classList.add('bunny-show');
   }
 
   function closeBunny() {
     document.getElementById('bunny-modal').style.display = 'none';
+    document.getElementById('bunny-box').classList.remove('bunny-show');
   }
 
   document.getElementById('bunny-modal').addEventListener('click', function(e) {
     if (e.target === this) closeBunny();
   });
 
-  // Feedback
   document.getElementById('send-feedback-btn').addEventListener('click', async () => {
     const name = document.getElementById('fb-name').value.trim();
     const email = document.getElementById('fb-email').value.trim();
@@ -307,7 +301,6 @@
     }
   });
 
-  // Stats
   function updateStats() {
     const favs = JSON.parse(localStorage.getItem('forkcast_favorites') || '[]');
     const cooked = JSON.parse(localStorage.getItem('forkcast_cooked') || '[]');
@@ -327,7 +320,7 @@
       const favIds = JSON.parse(localStorage.getItem('forkcast_favorites') || '[]');
       const favoriteRecipes = ALL_RECIPES.filter(r => favIds.includes(r.id));
       if (favoriteRecipes.length === 0) {
-        contentEl.innerHTML = '<div class="glass" style="padding:3rem;text-align:center;"><p style="color:var(--muted); font-size:1.1rem;">No favorites yet. Save some recipes! 🍽️</p></div>';
+        contentEl.innerHTML = '<div class="glass" style="padding:3rem;text-align:center;"><p style="color:var(--muted);">No favorites yet. Save some recipes! 🍽️</p></div>';
       } else {
         contentEl.innerHTML = '<div class="recipe-grid" id="fav-grid"></div>';
         renderRecipeCards(favoriteRecipes, 'fav-grid');
@@ -337,7 +330,7 @@
       const cookedIds = JSON.parse(localStorage.getItem('forkcast_cooked') || '[]');
       const cookedRecipes = ALL_RECIPES.filter(r => cookedIds.includes(r.id));
       if (cookedRecipes.length === 0) {
-        contentEl.innerHTML = '<div class="glass" style="padding:3rem;text-align:center;"><p style="color:var(--muted); font-size:1.1rem;">No cooked recipes yet! 😋</p></div>';
+        contentEl.innerHTML = '<div class="glass" style="padding:3rem;text-align:center;"><p style="color:var(--muted);">No cooked recipes yet! 😋</p></div>';
       } else {
         contentEl.innerHTML = '<div class="recipe-grid" id="cooked-grid"></div>';
         renderRecipeCards(cookedRecipes, 'cooked-grid');
