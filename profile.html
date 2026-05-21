@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,9 +7,10 @@
   <link rel="stylesheet" href="style.css?v=1.1" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
 </head>
-<div class="profile-bg"></div>
 
+<div class="profile-bg"></div>
 <div class="app-wrap">
+
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <nav class="sidebar-nav">
@@ -35,6 +35,7 @@
 
     <div class="page-content fade-up">
       <div class="profile-page-content">
+
         <div class="profile-header">
           <div class="profile-avatar-wrap">
             <img src="" alt="User Avatar" class="profile-avatar" id="user-avatar" />
@@ -67,21 +68,20 @@
         </div>
 
         <div class="dashboard-grid">
+
           <section id="profile-dynamic-section">
             <h2 class="sec-title" id="dynamic-title">Recent Activity 🕒</h2>
             <div id="dynamic-content-grid">
               <div class="meal-history">
                 <div class="history-item">
-                  <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100" class="history-img"
-                    alt="Meal" />
+                  <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100" class="history-img" alt="Meal" />
                   <div class="history-info">
                     <h4>Grilled Salmon Salad</h4>
                     <span>Cooked 2 days ago</span>
                   </div>
                 </div>
                 <div class="history-item">
-                  <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100" class="history-img"
-                    alt="Meal" />
+                  <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100" class="history-img" alt="Meal" />
                   <div class="history-info">
                     <h4>Avocado Toast</h4>
                     <span>Breakfast · Yesterday</span>
@@ -91,29 +91,27 @@
             </div>
           </section>
 
+          <!-- FEEDBACK FORM — Preferences ki jagah -->
           <aside>
-            <h2 class="sec-title">Preferences ⚙️</h2>
+            <h2 class="sec-title">Feedback 💬</h2>
             <div class="glass" style="padding:1.5rem;">
               <div class="input-group" style="margin-bottom:1rem;">
-                <label>Dietary Goal</label>
-                <div class="input-group" style="margin-bottom:1rem;">
-                  <label>Dietary Goal</label>
-                  <select class="cat-select" id="pref-diet" style="width:100%; margin-left:0;">
-                    <option value="Vegetarian">Vegetarian</option>
-                    <option value="Vegan">Vegan</option>
-                    <option value="Keto">Keto</option>
-                    <option value="Low Carb">Low Carb</option>
-                  </select>
-                </div>
-                <div class="input-group">
-                  <label>Daily Calorie Target</label>
-                  <input type="number" id="pref-calories" value="2200" class="add-input"
-                    style="width:100%; min-width:unset;" />
-                </div>
-                <button class="btn-primary" id="save-profile-btn" style="width:100%; margin-top:1.5rem;">Save
-                  Changes</button>
+                <label>Your Name</label>
+                <input type="text" id="fb-name" class="add-input" style="width:100%; min-width:unset;" placeholder="Your name" />
               </div>
+              <div class="input-group" style="margin-bottom:1rem;">
+                <label>Your Email</label>
+                <input type="email" id="fb-email" class="add-input" style="width:100%; min-width:unset;" placeholder="your@email.com" />
+              </div>
+              <div class="input-group" style="margin-bottom:1rem;">
+                <label>Message</label>
+                <textarea id="fb-message" class="add-input" rows="4" style="width:100%; min-width:unset; resize:vertical;" placeholder="Tell us what you think..."></textarea>
+              </div>
+              <button class="btn-primary" id="send-feedback-btn" style="width:100%; margin-top:0.5rem;">Send Feedback 🚀</button>
+              <p id="fb-status" style="text-align:center; margin-top:0.75rem; font-size:0.9rem;"></p>
+            </div>
           </aside>
+
         </div>
       </div><!-- end profile-page-content -->
     </div>
@@ -134,13 +132,9 @@
     document.getElementById('user-email').innerText = user.email;
     document.getElementById('user-avatar').src = user.avatar;
     document.getElementById('user-joined').innerText = `Joined ${user.joined}`;
-
-    // Fill preferences
-    if (user.dietGoal) document.getElementById('pref-diet').value = user.dietGoal;
-    if (user.calorieTarget) document.getElementById('pref-calories').value = user.calorieTarget;
   }
 
-  // Toast Function
+  // Toast
   function showToast(msg) {
     let toast = document.querySelector('.toast');
     if (!toast) {
@@ -153,14 +147,10 @@
     setTimeout(() => toast.classList.remove('show'), 3000);
   }
 
-  // Avatar Edit (File Picker)
+  // Avatar edit
   const avatarEditBtn = document.querySelector('.avatar-edit');
   const avatarInput = document.getElementById('avatar-upload');
-
-  avatarEditBtn.addEventListener('click', () => {
-    avatarInput.click();
-  });
-
+  avatarEditBtn.addEventListener('click', () => avatarInput.click());
   avatarInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -171,8 +161,6 @@
         Auth.setUser(user);
         document.getElementById('user-avatar').src = dataUrl;
         showToast('Avatar updated! ✨');
-
-        // Update topbar if present
         const topAvatar = document.querySelector('.profile-icon-link img');
         if (topAvatar) topAvatar.src = dataUrl;
       };
@@ -180,20 +168,53 @@
     }
   });
 
-  // Save Changes
-  document.getElementById('save-profile-btn').addEventListener('click', () => {
-    user.dietGoal = document.getElementById('pref-diet').value;
-    user.calorieTarget = document.getElementById('pref-calories').value;
-    Auth.setUser(user);
-    showToast('Changes saved successfully! ✨');
+  // FEEDBACK FORM — Formspree se Gmail pe aayega
+  document.getElementById('send-feedback-btn').addEventListener('click', async () => {
+    const name = document.getElementById('fb-name').value.trim();
+    const email = document.getElementById('fb-email').value.trim();
+    const message = document.getElementById('fb-message').value.trim();
+    const status = document.getElementById('fb-status');
+
+    if (!name || !email || !message) {
+      status.innerText = 'Please fill all fields!';
+      status.style.color = '#f87171';
+      return;
+    }
+
+    status.innerText = 'Sending...';
+    status.style.color = 'var(--accent)';
+
+    try {
+      const res = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ name, email, message })
+      });
+
+      if (res.ok) {
+        status.innerText = '✅ Feedback sent! Thank you.';
+        status.style.color = '#4ade80';
+        document.getElementById('fb-name').value = '';
+        document.getElementById('fb-email').value = '';
+        document.getElementById('fb-message').value = '';
+      } else {
+        status.innerText = '❌ Something went wrong. Try again.';
+        status.style.color = '#f87171';
+      }
+    } catch (err) {
+      status.innerText = '❌ Network error. Try again.';
+      status.style.color = '#f87171';
+    }
   });
 
-  // Dynamic Stats & Favorites Logic
+  // Stats
   function updateStats() {
     const favs = JSON.parse(localStorage.getItem('forkcast_favorites') || '[]');
     const cooked = JSON.parse(localStorage.getItem('forkcast_cooked') || '[]');
     const planner = JSON.parse(localStorage.getItem('forkcast_planner') || '{}');
-
     document.getElementById('count-favs').innerText = favs.length;
     document.getElementById('count-cooked').innerText = cooked.length;
     document.getElementById('count-plans').innerText = Object.keys(planner).length > 0 ? 1 : 0;
@@ -202,17 +223,14 @@
   function showSection(type) {
     const titleEl = document.getElementById('dynamic-title');
     const contentEl = document.getElementById('dynamic-content-grid');
-
-    // Clear the current content first to avoid showing old items
     contentEl.innerHTML = '';
 
     if (type === 'favorites') {
       titleEl.innerText = "Your Favorites ❤️";
       const favIds = JSON.parse(localStorage.getItem('forkcast_favorites') || '[]');
       const favoriteRecipes = ALL_RECIPES.filter(r => favIds.includes(r.id));
-
       if (favoriteRecipes.length === 0) {
-        contentEl.innerHTML = '<div class="glass" style="padding:3rem;text-align:center;"><p style="color:var(--muted); font-size:1.1rem;">No favorites yet. Save some recipes to see them here! 🍽️</p></div>';
+        contentEl.innerHTML = '<div class="glass" style="padding:3rem;text-align:center;"><p style="color:var(--muted); font-size:1.1rem;">No favorites yet. Save some recipes! 🍽️</p></div>';
       } else {
         contentEl.innerHTML = '<div class="recipe-grid" id="fav-grid"></div>';
         renderRecipeCards(favoriteRecipes, 'fav-grid');
@@ -221,9 +239,8 @@
       titleEl.innerText = "Recipes You've Cooked 🍳";
       const cookedIds = JSON.parse(localStorage.getItem('forkcast_cooked') || '[]');
       const cookedRecipes = ALL_RECIPES.filter(r => cookedIds.includes(r.id));
-
       if (cookedRecipes.length === 0) {
-        contentEl.innerHTML = '<div class="glass" style="padding:3rem;text-align:center;"><p style="color:var(--muted); font-size:1.1rem;">You haven\'t marked any recipes as cooked yet! 😋</p></div>';
+        contentEl.innerHTML = '<div class="glass" style="padding:3rem;text-align:center;"><p style="color:var(--muted); font-size:1.1rem;">No cooked recipes yet! 😋</p></div>';
       } else {
         contentEl.innerHTML = '<div class="recipe-grid" id="cooked-grid"></div>';
         renderRecipeCards(cookedRecipes, 'cooked-grid');
@@ -243,12 +260,10 @@
         </div>`;
     }
 
-    // Scroll to the results section smoothly
     document.getElementById('profile-dynamic-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   updateStats();
 </script>
 </body>
-
 </html>
