@@ -1,4 +1,4 @@
-/* ============================
+* ============================
    FORKCAST - GLOBAL STYLES
    ============================ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
@@ -1995,5 +1995,3 @@ textarea::placeholder {
 .grocery-item span {
   color: var(--text);
 }
-
-ye puri style.css hai toh iss ko edit krke full nyi vali css bnake do 
