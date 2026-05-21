@@ -1980,3 +1980,18 @@ body.dark-mode .profile-page-content {
   background: rgba(22, 27, 34, 0.85);
   border-color: rgba(255,255,255,0.08);
 }
+
+input,
+textarea,
+select {
+  color: var(--text);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+}
+
+.grocery-item span {
+  color: var(--text);
+}
