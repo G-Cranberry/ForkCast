@@ -1111,3 +1111,14 @@ body:not(.dark-mode) .voice-modal-content { background: #fff !important; }
   .add-form { flex-direction: column; }
   .add-form > * { width: 100%; }
 }
+
+/* ---------- AUTH PAGES - PARTICLE BACKGROUND OVERRIDE ---------- */
+body.auth-body {
+  background-color: var(--bg-color, #f7f3ee) !important;
+  background-image: none !important;
+}
+
+body.auth-body.dark-mode {
+  background-color: #0b0b0b !important;
+  background-image: none !important;
+}
