@@ -169,17 +169,17 @@
     FROM <span>FORKCAST TEAM</span>
   </div>
 
-  <script>
-    // Redirect to login after 3 seconds
+  
+    <script>
+  setTimeout(() => {
+    document.body.style.transition = "opacity 0.5s ease";
+    document.body.style.opacity = "0";
     setTimeout(() => {
-      // Add a fade out effect before redirect
-      document.body.style.transition = "opacity 0.5s ease";
-      document.body.style.opacity = "0";
-      setTimeout(() => {
-        window.location.href = 'signup.html';
-      }, 500);
-    }, 3000);
-  </script>
+      window.location.href = 'login.html';
+    }, 500);
+  }, 3000);
+</script>
+    
 </body>
 
 </html>
