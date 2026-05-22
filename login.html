@@ -8,7 +8,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup,
-           signInWithEmailAndPassword, onAuthStateChanged }
+           signInWithEmailAndPassword, onAuthStateChanged, signOut }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   const firebaseConfig = {
@@ -28,6 +28,7 @@
   window._provider = provider;
   window._signInWithPopup = signInWithPopup;
   window._signInEmail = signInWithEmailAndPassword;
+  window._signOut = signOut;
 
   onAuthStateChanged(auth, user => {
     if (user) {
@@ -42,29 +43,35 @@
   });
 </script>
 <style>
+  * { box-sizing: border-box; }
+
   body {
-    margin: 0; padding: 0;
+    margin: 0;
+    padding: 0;
     min-height: 100vh;
     background: #f7f3ee;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: 'Inter', sans-serif;
+    overflow: hidden;
   }
   body.dark-mode { background: #0b0b0b; }
 
-  /* Particle canvas stays behind everything */
+  /* Canvas FIXED behind everything — z-index: 0 */
   #particles-canvas {
     position: fixed;
     top: 0; left: 0;
     width: 100vw; height: 100vh;
     z-index: 0;
     pointer-events: none;
+    display: block;
   }
 
+  /* Card ABOVE canvas — z-index: 10 */
   .login-card {
     position: relative;
-    z-index: 1;
+    z-index: 10;
     background: white;
     border-radius: 24px;
     padding: 3rem 2.5rem;
@@ -110,6 +117,7 @@
     border-radius: 12px; font-size: 0.95rem;
     background: #fafafa; color: #333; outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
   }
   .form-group input:focus { border-color: #ff8fa3; box-shadow: 0 0 0 3px rgba(255,143,163,0.15); background: white; }
   body.dark-mode .form-group input { background: #2a2a2a; border-color: #444; color: #fff; }
@@ -133,6 +141,7 @@
   .footer-link a { color: #ff5c7c; font-weight: 600; text-decoration: none; }
   .footer-link a:hover { text-decoration: underline; }
 
+  /* Theme toggle ABOVE canvas — z-index: 20 */
   .theme-toggle {
     position: fixed; top: 20px; right: 20px;
     width: 42px; height: 42px; border-radius: 50%;
@@ -141,7 +150,7 @@
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     transition: transform 0.3s;
-    z-index: 10;
+    z-index: 20;
   }
   .theme-toggle:hover { transform: rotate(20deg); }
   body.dark-mode .theme-toggle { background: #1a1a1a; border-color: #444; }
@@ -149,11 +158,13 @@
 </head>
 <body>
 
-<!-- Particle Background Canvas -->
+<!-- Particle canvas — behind everything -->
 <canvas id="particles-canvas"></canvas>
 
+<!-- Theme toggle — above canvas -->
 <button class="theme-toggle" id="themeBtn">🌙</button>
 
+<!-- Login card — above canvas -->
 <div class="login-card">
   <div class="logo-area">
     <div class="logo-text">
@@ -211,9 +222,9 @@ document.getElementById('googleBtn').addEventListener('click', async () => {
 // ===== EMAIL SIGN IN =====
 document.getElementById('submitBtn').addEventListener('click', async () => {
   const email = document.getElementById('email').value.trim();
-  const pass = document.getElementById('password').value;
-  const err = document.getElementById('errMsg');
-  const btn = document.getElementById('submitBtn');
+  const pass  = document.getElementById('password').value;
+  const err   = document.getElementById('errMsg');
+  const btn   = document.getElementById('submitBtn');
   err.textContent = '';
   if (!email) { err.textContent = 'Email daalo.'; return; }
   if (!pass)  { err.textContent = 'Password daalo.'; return; }
@@ -235,7 +246,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   }
 });
 
-// ===== THEME TOGGLE =====
+// ===== THEME =====
 const themeBtn = document.getElementById('themeBtn');
 if (localStorage.getItem('theme') === 'dark') {
   document.body.classList.add('dark-mode');
@@ -249,145 +260,150 @@ themeBtn.addEventListener('click', () => {
 });
 
 // ===== PARTICLE BACKGROUND =====
-const canvas = document.getElementById('particles-canvas');
-const ctx = canvas.getContext('2d');
-let particlesArray = [];
-let oldWidth = 0, oldHeight = 0;
-const torchRadius = 220;
-const attractionForce = 1.35;
-const springStiffness = 0.038;
-const mouse = { x: null, y: null, radius: 175 };
+(function () {
+  const canvas = document.getElementById('particles-canvas');
+  const ctx    = canvas.getContext('2d');
+  let particles = [];
+  let W = 0, H = 0;
+  const TORCH    = 220;
+  const ATTRACT  = 1.35;
+  const SPRING   = 0.038;
+  const mouse    = { x: null, y: null, r: 175 };
 
-function resizeCanvas() {
-  const dpr = window.devicePixelRatio || 1;
-  const w = window.innerWidth, h = window.innerHeight;
-  if (particlesArray.length > 0 && oldWidth > 0 && oldHeight > 0) {
-    particlesArray.forEach(p => {
-      p.x = (p.x / oldWidth) * w;   p.y = (p.y / oldHeight) * h;
-      p.baseX = (p.baseX / oldWidth) * w; p.baseY = (p.baseY / oldHeight) * h;
-    });
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const w   = window.innerWidth;
+    const h   = window.innerHeight;
+    if (particles.length && W && H) {
+      particles.forEach(p => {
+        p.x     = (p.x     / W) * w;
+        p.y     = (p.y     / H) * h;
+        p.baseX = (p.baseX / W) * w;
+        p.baseY = (p.baseY / H) * h;
+      });
+    }
+    canvas.width  = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width  = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.scale(dpr, dpr);
+    W = w; H = h;
   }
-  canvas.width = w * dpr; canvas.height = h * dpr;
-  canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
-  ctx.scale(dpr, dpr);
-  oldWidth = w; oldHeight = h;
-}
-window.addEventListener('resize', resizeCanvas);
 
-class Particle {
-  constructor(x, y) {
-    this.x = x; this.y = y; this.baseX = x; this.baseY = y;
-    this.vx = 0; this.vy = 0;
+  function Particle(x, y) {
+    this.x = this.baseX = x;
+    this.y = this.baseY = y;
+    this.vx = this.vy = 0;
     this.size = Math.random() * 2.8 + 2.2;
-    this.hue = Math.random() * 360;
-    this.saturation = Math.floor(Math.random() * 30 + 55);
-    this.lightness  = Math.floor(Math.random() * 18 + 72);
-    this.lightColor = `hsla(${this.hue}, ${this.saturation}%, ${this.lightness}%, `;
+    const hue = Math.random() * 360;
+    const sat = Math.floor(Math.random() * 30 + 55);
+    const lit = Math.floor(Math.random() * 18 + 72);
+    this.col = `hsla(${hue},${sat}%,${lit}%,`;
   }
-  update() {
+
+  Particle.prototype.update = function () {
     let ax = 0, ay = 0;
     if (mouse.x !== null) {
       const dx = mouse.x - this.x, dy = mouse.y - this.y;
-      const dist = Math.sqrt(dx*dx + dy*dy);
-      if (dist < mouse.radius) {
-        const f = (mouse.radius - dist) / mouse.radius;
-        ax += (dx / dist) * f * attractionForce;
-        ay += (dy / dist) * f * attractionForce;
+      const d  = Math.sqrt(dx*dx + dy*dy);
+      if (d < mouse.r) {
+        const f = (mouse.r - d) / mouse.r;
+        ax += (dx/d) * f * ATTRACT;
+        ay += (dy/d) * f * ATTRACT;
       }
     }
-    ax += (this.baseX - this.x) * springStiffness;
-    ay += (this.baseY - this.y) * springStiffness;
+    ax += (this.baseX - this.x) * SPRING;
+    ay += (this.baseY - this.y) * SPRING;
     this.vx = (this.vx + ax) * 0.82;
     this.vy = (this.vy + ay) * 0.82;
-    this.x += this.vx; this.y += this.vy;
+    this.x += this.vx;
+    this.y += this.vy;
+  };
+
+  function init() {
+    particles = [];
+    for (let i = 0; i < 160; i++)
+      particles.push(new Particle(Math.random()*W, Math.random()*H));
   }
-}
 
-function initParticles() {
-  particlesArray = [];
-  const w = window.innerWidth, h = window.innerHeight;
-  for (let i = 0; i < 160; i++)
-    particlesArray.push(new Particle(Math.random()*w, Math.random()*h));
-}
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const dark = document.body.classList.contains('dark-mode');
 
-function drawAndSimulate() {
-  ctx.clearRect(0, 0, oldWidth, oldHeight);
-  const isDark = document.body.classList.contains('dark-mode');
-
-  // Torch glow under cursor
-  if (mouse.x !== null) {
-    const g = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, torchRadius);
-    if (isDark) {
-      g.addColorStop(0,   'rgba(255,255,255,0.12)');
-      g.addColorStop(0.5, 'rgba(255,255,255,0.04)');
-      g.addColorStop(1,   'rgba(255,255,255,0)');
-    } else {
-      g.addColorStop(0,   'rgba(0,0,0,0.06)');
-      g.addColorStop(0.5, 'rgba(0,0,0,0.02)');
+    // Torch glow
+    if (mouse.x !== null) {
+      const g = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, TORCH);
+      g.addColorStop(0,   dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.06)');
+      g.addColorStop(0.5, dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)');
       g.addColorStop(1,   'rgba(0,0,0,0)');
+      ctx.beginPath();
+      ctx.arc(mouse.x, mouse.y, TORCH, 0, Math.PI*2);
+      ctx.fillStyle = g;
+      ctx.fill();
     }
-    ctx.beginPath();
-    ctx.arc(mouse.x, mouse.y, torchRadius, 0, Math.PI*2);
-    ctx.fillStyle = g;
-    ctx.fill();
-  }
 
-  particlesArray.forEach(p => p.update());
+    particles.forEach(p => p.update());
 
-  // Connecting lines inside torch radius
-  for (let i = 0; i < particlesArray.length; i++) {
-    const p1 = particlesArray[i];
-    for (let j = i+1; j < particlesArray.length; j++) {
-      const p2 = particlesArray[j];
-      const dx = p1.x - p2.x, dy = p1.y - p2.y;
-      const dist = Math.sqrt(dx*dx + dy*dy);
-      if (dist < 100 && mouse.x !== null) {
-        const mx = (p1.x+p2.x)/2, my = (p1.y+p2.y)/2;
-        const dm = Math.sqrt((mouse.x-mx)**2 + (mouse.y-my)**2);
-        if (dm < torchRadius) {
-          const tf = Math.pow(1 - dm/torchRadius, 1.8);
-          const op = tf * (1 - dist/100) * 0.42;
-          if (op > 0.01) {
-            ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = isDark ? `rgba(255,255,255,${op})` : `${p1.lightColor}${op})`;
-            ctx.lineWidth = 0.75; ctx.stroke();
+    // Lines
+    for (let i = 0; i < particles.length; i++) {
+      const p1 = particles[i];
+      for (let j = i+1; j < particles.length; j++) {
+        const p2 = particles[j];
+        const dx = p1.x - p2.x, dy = p1.y - p2.y;
+        const d  = Math.sqrt(dx*dx + dy*dy);
+        if (d < 100 && mouse.x !== null) {
+          const mx = (p1.x+p2.x)/2, my = (p1.y+p2.y)/2;
+          const dm = Math.sqrt((mouse.x-mx)**2 + (mouse.y-my)**2);
+          if (dm < TORCH) {
+            const op = Math.pow(1-dm/TORCH, 1.8) * (1-d/100) * 0.42;
+            if (op > 0.01) {
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.strokeStyle = dark ? `rgba(255,255,255,${op})` : `${p1.col}${op})`;
+              ctx.lineWidth   = 0.75;
+              ctx.stroke();
+            }
           }
         }
       }
     }
-  }
 
-  // Dots inside torch radius
-  particlesArray.forEach(p => {
-    if (mouse.x !== null) {
+    // Dots
+    particles.forEach(p => {
+      if (mouse.x === null) return;
       const dx = mouse.x - p.x, dy = mouse.y - p.y;
       const dm = Math.sqrt(dx*dx + dy*dy);
-      if (dm < torchRadius) {
-        const op = Math.pow(1 - dm/torchRadius, 1.4);
+      if (dm < TORCH) {
+        const op = Math.pow(1-dm/TORCH, 1.4);
         if (op > 0.01) {
-          ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-          if (isDark) {
-            ctx.fillStyle = `rgba(255,255,255,${op})`;
-            ctx.shadowBlur = 3; ctx.shadowColor = 'rgba(255,255,255,0.45)';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+          if (dark) {
+            ctx.fillStyle  = `rgba(255,255,255,${op})`;
+            ctx.shadowBlur = 3;
+            ctx.shadowColor = 'rgba(255,255,255,0.45)';
           } else {
-            ctx.fillStyle = `${p.lightColor}${op})`;
+            ctx.fillStyle  = `${p.col}${op})`;
             ctx.shadowBlur = 0;
           }
           ctx.fill();
+          ctx.shadowBlur = 0;
         }
       }
-    }
-  });
+    });
 
-  requestAnimationFrame(drawAndSimulate);
-}
+    requestAnimationFrame(draw);
+  }
 
-window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
-document.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
+  window.addEventListener('resize', resize);
+  window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+  document.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
 
-resizeCanvas();
-initParticles();
-drawAndSimulate();
+  resize();
+  init();
+  draw();
+})();
 </script>
 </body>
 </html>
