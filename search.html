@@ -4,56 +4,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>Smart Search – Forkcast</title>
-
   <meta name="description"
     content="Search recipes by ingredient. Type onion, paneer or potato and get 5-10 beautiful recipes." />
-
   <link rel="stylesheet" href="style.css?v=1.1" />
-  <style>
-.big-search {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 16px;
-  padding: 0.75rem 1.25rem;
-  margin: 1.5rem 0 1.25rem;
-}
-.big-search input {
-  flex: 1;
-  background: transparent !important;
-  border: none !important;
-  outline: none;
-  color: #f1f1f1 !important;
-  font-size: 1.05rem;
-  font-family: inherit;
-}
-.big-search input::placeholder { color: rgba(255,255,255,0.35); }
-.search-page-header { margin-bottom: 0.5rem; }
-.search-page-header h1 { font-size: 1.8rem; font-weight: 900; }
-.search-page-header > p { color: #888; margin-top: 0.4rem; font-size: 0.95rem; }
-.results-context {
-  font-size: 0.92rem;
-  color: #888;
-  margin-bottom: 1.25rem;
-  padding: 0.6rem 1rem;
-  background: rgba(255,143,163,0.08);
-  border-radius: 10px;
-  border-left: 3px solid #ff8fa3;
-}
-</style>
 </head>
 
 <body>
-
   <canvas id="rainbow-canvas"></canvas>
-
   <div class="app-wrap">
-
-    <!-- SIDEBAR -->
+    <!-- SIDEBAR (Toggleable) -->
     <aside class="sidebar" id="sidebar">
       <nav class="sidebar-nav">
         <!-- Dynamically filled by main.js -->
@@ -62,301 +22,158 @@
 
     <!-- MAIN -->
     <main class="main">
-
       <!-- TOPBAR -->
       <header class="topbar">
-
         <div class="topbar-left">
-
           <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
-            <span></span>
-            <span></span>
-            <span></span>
+            <span></span><span></span><span></span>
           </button>
-
           <div class="topbar-logo">
             <img src="ForkCast.jpeg" alt="ForkCast Logo">
-
-            <span class="logo-text">
-              <span class="fork">Fork</span>
-              <span class="cast">Cast</span>
-            </span>
+            <span class="logo-text"><span class="fork">Fork</span><span class="cast">Cast</span></span>
           </div>
-
         </div>
 
-        <!-- REMOVED EXTRA SEARCH BAR -->
+        <div class="search-bar-wrap">
+          <input type="text" id="global-search-input" placeholder="Enter ingredients..." />
+          <div class="search-actions">
+            <span id="voice-search-btn" class="search-action-btn" title="Voice Search">🎤</span>
+            <span id="scan-search-btn" class="search-action-btn" title="Scan Ingredients">📷</span>
+          </div>
+          <button class="search-btn" id="global-search-btn">Search</button>
+        </div>
 
         <div class="topbar-right"></div>
-
       </header>
 
-      <!-- PAGE CONTENT -->
       <div class="page-content fade-up">
-
         <div class="search-page-header">
+          <h1><span class="grad">Smart Ingredient Search</span> 🔍</h1>
+          <p>Type in an ingredient — onion, paneer, potato, egg — and get tailored recipes instantly!</p>
 
-          <h1>
-            <span class="grad">Smart Ingredient Search</span> 🔍
-          </h1>
-
-          <p>
-            Type in an ingredient — onion, paneer, potato, egg —
-            and get tailored recipes instantly!
-          </p>
-
-          <!-- MAIN SEARCH -->
           <div class="big-search">
-
-            <span style="font-size:1.3rem;margin-right:8px;">
-              🧑‍🍳
-            </span>
-
-            <input
-              type="text"
-              id="ingredient-input"
-              placeholder="e.g. onion, paneer, potato..."
-              style="
-                color:white;
-                background:transparent;
-                border:none;
-                outline:none;
-              "
-            />
-
-            <div
-              class="search-actions"
-              style="margin-right:1.5rem;"
-            >
-
-              <span
-                id="page-voice-search-btn"
-                class="search-action-btn"
-                style="color:var(--text);opacity:0.5;"
-                title="Voice Search"
-              >
-                🎤
-              </span>
-
-              <span
-                id="page-scan-search-btn"
-                class="search-action-btn"
-                style="color:var(--text);opacity:0.5;"
-                title="Scan Ingredients"
-              >
-                📷
-              </span>
-
+            <span style="font-size:1.3rem;margin-right:8px;">🧑‍🍳</span>
+            <input type="text" id="ingredient-input" placeholder="e.g. onion, paneer, potato..." />
+            <div class="search-actions" style="margin-right: 1.5rem;">
+              <span id="page-voice-search-btn" class="search-action-btn" style="color:var(--text); opacity:0.5;"
+                title="Voice Search">🎤</span>
+              <span id="page-scan-search-btn" class="search-action-btn" style="color:var(--text); opacity:0.5;"
+                title="Scan Ingredients">📷</span>
             </div>
-
-            <button
-              class="search-btn"
-              id="ingredient-search-btn"
-              style="padding:0.7rem 1.8rem;"
-            >
-              Search
-            </button>
-
+            <button class="search-btn" id="ingredient-search-btn" style="padding:0.7rem 1.8rem;">Search</button>
           </div>
 
-          <!-- QUICK TAGS -->
           <div class="quick-tags">
-
-            <span class="quick-tag" onclick="doSearch('onion')">
-              🧅 Onion
-            </span>
-
-            <span class="quick-tag" onclick="doSearch('paneer')">
-              🧀 Paneer
-            </span>
-
-            <span class="quick-tag" onclick="doSearch('potato')">
-              🥔 Potato
-            </span>
-
-            <span class="quick-tag" onclick="doSearch('tomato')">
-              🍅 Tomato
-            </span>
-
-            <span class="quick-tag" onclick="doSearch('spinach')">
-              🥬 Spinach
-            </span>
-
-            <span class="quick-tag" onclick="doSearch('chicken')">
-              🍗 Chicken
-            </span>
-
-            <span class="quick-tag" onclick="doSearch('egg')">
-              🥚 Egg
-            </span>
-
-            <span class="quick-tag" onclick="doSearch('apple')">
-              🍎 Apple
-            </span>
-
+            <span class="quick-tag" onclick="doSearch('onion')">🧅 Onion</span>
+            <span class="quick-tag" onclick="doSearch('paneer')">🧀 Paneer</span>
+            <span class="quick-tag" onclick="doSearch('potato')">🥔 Potato</span>
+            <span class="quick-tag" onclick="doSearch('tomato')">🍅 Tomato</span>
+            <span class="quick-tag" onclick="doSearch('spinach')">🥬 Spinach</span>
+            <span class="quick-tag" onclick="doSearch('chicken')">🍗 Chicken</span>
+            <span class="quick-tag" onclick="doSearch('egg')">🥚 Egg</span>
+            <span class="quick-tag" onclick="doSearch('apple')">🍎 Apple</span>
           </div>
-
         </div>
 
-        <div
-          id="results-context"
-          class="results-context"
-          style="display:none;"
-        ></div>
-
-        <div
-          id="search-results"
-          class="recipe-grid"
-        ></div>
-
+        <div id="results-context" class="results-context" style="display:none;"></div>
+        <div id="search-results" class="recipe-grid"></div>
       </div>
-
     </main>
-
   </div>
 
   <script src="recipes-data.js"></script>
   <script src="main.js"></script>
-
   <script>
-
     const urlParams = new URLSearchParams(location.search);
-
     const preQuery = urlParams.get('q') || '';
 
     function doSearch(query) {
-
-      const resolvedQuery =
-        (query !== undefined)
-          ? query.trim()
-          : document.getElementById('ingredient-input').value.trim();
+      // Determine query: use passed argument (e.g. from quick tags) or read from the page input
+      const resolvedQuery = (query !== undefined) ? query.trim() : document.getElementById('ingredient-input').value.trim();
+      const navbarSearch = document.querySelector('.topbar .search-bar-wrap');
 
       if (!resolvedQuery) {
-
+        // ---- 1. CLEARED / INITIAL STATE ----
         document.getElementById('ingredient-input').value = '';
-
+        
+        // Reset URL back to clean base path
         history.replaceState(null, '', 'search.html');
-
+        
+        // Hide and clear results context banner
         const ctx = document.getElementById('results-context');
-
         if (ctx) {
           ctx.style.display = 'none';
           ctx.textContent = '';
         }
-
-        const resultsContainer =
-          document.getElementById('search-results');
-
+        
+        // Empty the recipe grid
+        const resultsContainer = document.getElementById('search-results');
         if (resultsContainer) {
           resultsContainer.innerHTML = '';
         }
-
+        
+        // Make the navbar search bar visible again
+        if (navbarSearch) {
+          navbarSearch.style.display = 'flex';
+        }
         return;
       }
 
-      document.getElementById('ingredient-input').value =
-        resolvedQuery;
-
-      history.replaceState(
-        null,
-        '',
-        `search.html?q=${encodeURIComponent(resolvedQuery)}`
-      );
-
+      // ---- 2. ACTIVE SEARCH STATE ----
+      document.getElementById('ingredient-input').value = resolvedQuery;
+      
+      // Update URL dynamic query parameter without page reload
+      history.replaceState(null, '', `search.html?q=${encodeURIComponent(resolvedQuery)}`);
+      
       const results = searchRecipes(resolvedQuery);
-
-      const ctx =
-        document.getElementById('results-context');
-
+      const ctx = document.getElementById('results-context');
       if (ctx) {
-
         ctx.style.display = 'block';
-
         if (results.length > 0) {
-
-          ctx.textContent =
-            `✨ Showing ${results.length} recipes for "${resolvedQuery}"`;
-
+          ctx.textContent = `✨ Showing ${results.length} recipes for "${resolvedQuery}"`;
         } else {
-
-          ctx.textContent =
-            `😕 No recipes found for "${resolvedQuery}". Try: onion, paneer, potato, tomato, spinach, chicken, egg, apple`;
-
+          ctx.textContent = `😕 No recipes found for "${resolvedQuery}". Try: onion, paneer, potato, tomato, spinach, chicken, egg, apple`;
         }
       }
-
+      
       renderRecipeCards(results, 'search-results');
+      
+      // Hide the navbar search bar completely
+      if (navbarSearch) {
+        navbarSearch.style.display = 'none';
+      }
     }
 
-    document
-      .getElementById('ingredient-search-btn')
-      .addEventListener('click', () => doSearch());
+    document.getElementById('ingredient-search-btn').addEventListener('click', () => doSearch());
+    document.getElementById('ingredient-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') doSearch();
+    });
 
-    document
-      .getElementById('ingredient-input')
-      .addEventListener('keydown', e => {
-
-        if (e.key === 'Enter') {
-          doSearch();
-        }
-
-      });
-
-    // VOICE SEARCH
-    const pgVoice =
-      document.getElementById('page-voice-search-btn');
-
-    const pgScan =
-      document.getElementById('page-scan-search-btn');
-
-    const pgInput =
-      document.getElementById('ingredient-input');
+    // Page-specific Advanced Search
+    const pgVoice = document.getElementById('page-voice-search-btn');
+    const pgScan = document.getElementById('page-scan-search-btn');
+    const pgInput = document.getElementById('ingredient-input');
 
     if (pgVoice) {
-
       pgVoice.addEventListener('click', () => {
-
         window.startVoiceSearch(pgInput, doSearch);
-
       });
     }
 
-    // IMAGE SCAN
     if (pgScan) {
-
       pgScan.addEventListener('click', () => {
-
         const fi = document.createElement('input');
-
-        fi.type = 'file';
-        fi.accept = 'image/*';
-
+        fi.type = 'file'; fi.accept = 'image/*';
         fi.onchange = (e) => {
-
-          alert(
-            "Scanning ingredients from "
-            + e.target.files[0].name
-            + "..."
-          );
-
-          setTimeout(() => {
-
-            pgInput.value = "Spinach, Garlic";
-
-            doSearch();
-
-          }, 1500);
+          alert("Scanning ingredients from " + e.target.files[0].name + "...");
+          setTimeout(() => { pgInput.value = "Spinach, Garlic"; doSearch(); }, 1500);
         };
-
         fi.click();
       });
     }
 
-    if (preQuery) {
-      doSearch(preQuery);
-    }
-
+    if (preQuery) doSearch(preQuery);
   </script>
-
 </body>
+
 </html>
