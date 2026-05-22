@@ -20,7 +20,6 @@
     appWrap.classList.toggle('menu-active');
   });
 
-  // Close sidebar when clicking outside (optional but good UX)
   document.addEventListener('click', (e) => {
     if (appWrap.classList.contains('menu-active') &&
       !toggle.contains(e.target) &&
@@ -98,43 +97,29 @@ updateActiveLink();
   btn.addEventListener('click', doSearch);
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
 
-  // Advanced Search Actions
   const voiceBtn = document.getElementById('voice-search-btn');
   const scanBtn = document.getElementById('scan-search-btn');
 
-  // Voice Search Reusable Function
-  // Voice Search Reusable Function (Improved Google-like Version)
   window.startVoiceSearch = function (inputElement, onSearchCallback) {
-
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("Voice recognition is not supported in this browser.");
       return;
     }
 
-    // Create Voice Modal if it doesn't exist
     let voiceOverlay = document.getElementById('voice-modal');
-
     if (!voiceOverlay) {
       voiceOverlay = document.createElement('div');
       voiceOverlay.id = 'voice-modal';
       voiceOverlay.className = 'voice-modal-overlay';
-
       voiceOverlay.innerHTML = `
-      <div class="voice-modal-content">
-        <span class="voice-close" id="voice-close-btn">&times;</span>
-        <div class="voice-mic-icon">🎤</div>
-        <div class="voice-status" id="voice-status-text">
-          Listening...
+        <div class="voice-modal-content">
+          <span class="voice-close" id="voice-close-btn">&times;</span>
+          <div class="voice-mic-icon">🎤</div>
+          <div class="voice-status" id="voice-status-text">Listening...</div>
+          <div class="voice-text" id="voice-text-output">Speak now...</div>
         </div>
-        <div class="voice-text" id="voice-text-output">
-          Speak now...
-        </div>
-      </div>
-    `;
-
+      `;
       document.body.appendChild(voiceOverlay);
     }
 
@@ -143,98 +128,52 @@ updateActiveLink();
     const voiceCloseBtn = document.getElementById('voice-close-btn');
 
     voiceOverlay.classList.add('active');
-
     voiceTextOutput.textContent = "Speak now...";
     voiceStatus.textContent = "Listening...";
 
     const recognition = new SpeechRecognition();
-
-    // Better recognition settings
     recognition.lang = 'en-US';
-    recognition.continuous = false; // Set to false so it stops after one phrase
+    recognition.continuous = false;
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
     let finalTranscript = '';
 
-    recognition.onstart = () => {
-      voiceStatus.textContent = "Listening...";
-    };
+    recognition.onstart = () => { voiceStatus.textContent = "Listening..."; };
 
     recognition.onresult = (event) => {
-
       let interimTranscript = '';
-
       for (let i = event.resultIndex; i < event.results.length; i++) {
-
         const transcript = event.results[i][0].transcript;
-
         if (event.results[i].isFinal) {
           finalTranscript += transcript + ' ';
         } else {
           interimTranscript += transcript;
         }
       }
-
       const combined = finalTranscript + interimTranscript;
-
       voiceTextOutput.textContent = combined;
-
-      if (inputElement) {
-        inputElement.value = combined.trim();
-      }
+      if (inputElement) inputElement.value = combined.trim();
     };
 
     recognition.onerror = (event) => {
-
-      console.error("Speech recognition error:", event.error);
-
       switch (event.error) {
-
-        case 'not-allowed':
-          voiceStatus.textContent =
-            "Microphone permission denied";
-          break;
-
-        case 'no-speech':
-          voiceStatus.textContent =
-            "No speech detected";
-          break;
-
-        case 'audio-capture':
-          voiceStatus.textContent =
-            "Microphone not found";
-          break;
-
-        default:
-          voiceStatus.textContent =
-            "Voice recognition error";
+        case 'not-allowed': voiceStatus.textContent = "Microphone permission denied"; break;
+        case 'no-speech': voiceStatus.textContent = "No speech detected"; break;
+        case 'audio-capture': voiceStatus.textContent = "Microphone not found"; break;
+        default: voiceStatus.textContent = "Voice recognition error";
       }
-
-      setTimeout(() => {
-        voiceOverlay.classList.remove('active');
-      }, 2000);
+      setTimeout(() => { voiceOverlay.classList.remove('active'); }, 2000);
     };
 
     recognition.onend = () => {
-
       voiceStatus.textContent = "Processing...";
-
       setTimeout(() => {
-
         voiceOverlay.classList.remove('active');
-
         if (finalTranscript.trim()) {
-
-          if (inputElement) {
-            inputElement.value = finalTranscript.trim();
-          }
-
-          if (onSearchCallback) {
-            onSearchCallback();
-          }
+          if (inputElement) inputElement.value = finalTranscript.trim();
+          if (onSearchCallback) onSearchCallback();
         }
-
       }, 700);
     };
 
@@ -245,6 +184,7 @@ updateActiveLink();
 
     recognition.start();
   };
+
   if (voiceBtn) {
     voiceBtn.addEventListener('click', () => {
       window.startVoiceSearch(input, doSearch);
@@ -258,7 +198,6 @@ updateActiveLink();
   }
 })();
 
-// ---- Authentication Logic (Dummy) ----
 // ============================================================
 // AUTH — Firebase se user data read karta hai
 // ============================================================
@@ -270,27 +209,54 @@ const Auth = {
   setUser(data) {
     localStorage.setItem('forkcast_user', JSON.stringify(data));
   },
-  logout() {
+
+  // ✅ FIX: Firebase signOut bhi karo, sirf localStorage clear nahi
+  async logout() {
     localStorage.removeItem('forkcast_user');
-    window.location.href = 'signup.html';
+    localStorage.setItem('just_logged_out', '1'); // flag set karo
+
+    // Firebase signOut
+    try {
+      const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+      const { getAuth, signOut } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyBBY2W3EH1Ng5WeBOvTKLxFfJ0aa6UmE",
+        authDomain: "forkcast-61470.firebaseapp.com",
+        projectId: "forkcast-61470",
+        storageBucket: "forkcast-61470.firebasestorage.app",
+        messagingSenderId: "283261245477",
+        appId: "1:283261245477:web:d0190096a832f3b14ab5a3"
+      };
+
+      const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      await signOut(auth);
+    } catch (e) {
+      console.warn('Firebase signOut error:', e);
+    }
+
+    // ✅ FIX: replace() use karo taaki back button se wapis na aye
+    window.location.replace('login.html?logout=1');
   },
+
   isLoggedIn() {
     return !!localStorage.getItem('forkcast_user');
   }
 };
 
-// Protected pages — agar login nahi hai toh signup pe bhejo
+// Protected pages — agar login nahi hai toh login pe bhejo
 const publicPages = ['signup.html', 'login.html', 'index.html'];
 const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 if (!publicPages.includes(currentPage) && !Auth.isLoggedIn()) {
-  window.location.href = 'signup.html';
+  window.location.replace('login.html');
 }
+
 // ---- Dynamic Navigation & Header ----
 function updateNav() {
   const nav = document.querySelector('.sidebar-nav');
   const user = Auth.getUser();
 
-  // 1. Sidebar update
   if (nav) {
     let navHTML = `
       <a href="home.html" class="nav-item"><span class="nav-icon">🏠</span> Home</a>
@@ -311,7 +277,6 @@ function updateNav() {
     nav.innerHTML = navHTML;
   }
 
-  // 2. Topbar right update (Profile icon)
   const topbar = document.querySelector('.topbar');
   if (topbar) {
     let topRight = topbar.querySelector('.topbar-right');
