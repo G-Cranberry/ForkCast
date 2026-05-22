@@ -12,15 +12,13 @@
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   const firebaseConfig = {
-  apiKey: "AIzaSyBBV2W3EH1Ng5WeBOvTKLxFfJ0aa6UlPeo",
-  authDomain: "forkcast-61470.firebaseapp.com",
-  projectId: "forkcast-61470",
-  storageBucket: "forkcast-61470.firebasestorage.app",
-  messagingSenderId: "283261245477",
-  appId: "1:283261245477:web:417d0190096a832f3487cc",
-  measurementId: "G-3NNMQLSGDW"
-};
-
+    apiKey: "AIzaSyBBV2W3EH1Ng5WeBOvTKLxFfJ0aa6UlPeo",
+    authDomain: "forkcast-61470.firebaseapp.com",
+    projectId: "forkcast-61470",
+    storageBucket: "forkcast-61470.firebasestorage.app",
+    messagingSenderId: "283261245477",
+    appId: "1:283261245477:web:d0190096a832f3b14ab5a3"
+  };
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
@@ -32,17 +30,22 @@
   window._signInEmail = signInWithEmailAndPassword;
   window._signOut = signOut;
 
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      localStorage.setItem('forkcast_user', JSON.stringify({
-        name: user.displayName || user.email.split('@')[0],
-        email: user.email,
-        avatar: user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
-        joined: new Date().toLocaleDateString()
-      }));
-      window.location.href = 'home.html';
-    }
-  });
+  // ✅ KEY FIX: logout=1 ho toh Firebase se bhi signOut karo aur redirect mat karo
+  if (window.location.search.includes('logout=1')) {
+    signOut(auth).catch(() => {});
+  } else {
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        localStorage.setItem('forkcast_user', JSON.stringify({
+          name: user.displayName || user.email.split('@')[0],
+          email: user.email,
+          avatar: user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
+          joined: new Date().toLocaleDateString()
+        }));
+        window.location.href = 'home.html';
+      }
+    });
+  }
 </script>
 <style>
   * { box-sizing: border-box; }
@@ -60,7 +63,6 @@
   }
   body.dark-mode { background: #0b0b0b; }
 
-  /* Canvas FIXED behind everything — z-index: 0 */
   #particles-canvas {
     position: fixed;
     top: 0; left: 0;
@@ -70,7 +72,6 @@
     display: block;
   }
 
-  /* Card ABOVE canvas — z-index: 10 */
   .login-card {
     position: relative;
     z-index: 10;
@@ -143,7 +144,6 @@
   .footer-link a { color: #ff5c7c; font-weight: 600; text-decoration: none; }
   .footer-link a:hover { text-decoration: underline; }
 
-  /* Theme toggle ABOVE canvas — z-index: 20 */
   .theme-toggle {
     position: fixed; top: 20px; right: 20px;
     width: 42px; height: 42px; border-radius: 50%;
@@ -160,13 +160,9 @@
 </head>
 <body>
 
-<!-- Particle canvas — behind everything -->
 <canvas id="particles-canvas"></canvas>
-
-<!-- Theme toggle — above canvas -->
 <button class="theme-toggle" id="themeBtn">🌙</button>
 
-<!-- Login card — above canvas -->
 <div class="login-card">
   <div class="logo-area">
     <div class="logo-text">
@@ -267,34 +263,28 @@ themeBtn.addEventListener('click', () => {
   const ctx    = canvas.getContext('2d');
   let particles = [];
   let W = 0, H = 0;
-  const TORCH    = 220;
-  const ATTRACT  = 1.35;
-  const SPRING   = 0.038;
-  const mouse    = { x: null, y: null, r: 175 };
+  const TORCH   = 220;
+  const ATTRACT = 1.35;
+  const SPRING  = 0.038;
+  const mouse   = { x: null, y: null, r: 175 };
 
   function resize() {
     const dpr = window.devicePixelRatio || 1;
-    const w   = window.innerWidth;
-    const h   = window.innerHeight;
+    const w = window.innerWidth, h = window.innerHeight;
     if (particles.length && W && H) {
       particles.forEach(p => {
-        p.x     = (p.x     / W) * w;
-        p.y     = (p.y     / H) * h;
-        p.baseX = (p.baseX / W) * w;
-        p.baseY = (p.baseY / H) * h;
+        p.x = (p.x / W) * w; p.y = (p.y / H) * h;
+        p.baseX = (p.baseX / W) * w; p.baseY = (p.baseY / H) * h;
       });
     }
-    canvas.width  = w * dpr;
-    canvas.height = h * dpr;
-    canvas.style.width  = w + 'px';
-    canvas.style.height = h + 'px';
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
     ctx.scale(dpr, dpr);
     W = w; H = h;
   }
 
   function Particle(x, y) {
-    this.x = this.baseX = x;
-    this.y = this.baseY = y;
+    this.x = this.baseX = x; this.y = this.baseY = y;
     this.vx = this.vy = 0;
     this.size = Math.random() * 2.8 + 2.2;
     const hue = Math.random() * 360;
@@ -307,7 +297,7 @@ themeBtn.addEventListener('click', () => {
     let ax = 0, ay = 0;
     if (mouse.x !== null) {
       const dx = mouse.x - this.x, dy = mouse.y - this.y;
-      const d  = Math.sqrt(dx*dx + dy*dy);
+      const d = Math.sqrt(dx*dx + dy*dy);
       if (d < mouse.r) {
         const f = (mouse.r - d) / mouse.r;
         ax += (dx/d) * f * ATTRACT;
@@ -318,8 +308,7 @@ themeBtn.addEventListener('click', () => {
     ay += (this.baseY - this.y) * SPRING;
     this.vx = (this.vx + ax) * 0.82;
     this.vy = (this.vy + ay) * 0.82;
-    this.x += this.vx;
-    this.y += this.vy;
+    this.x += this.vx; this.y += this.vy;
   };
 
   function init() {
@@ -332,7 +321,6 @@ themeBtn.addEventListener('click', () => {
     ctx.clearRect(0, 0, W, H);
     const dark = document.body.classList.contains('dark-mode');
 
-    // Torch glow
     if (mouse.x !== null) {
       const g = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, TORCH);
       g.addColorStop(0,   dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.06)');
@@ -340,19 +328,17 @@ themeBtn.addEventListener('click', () => {
       g.addColorStop(1,   'rgba(0,0,0,0)');
       ctx.beginPath();
       ctx.arc(mouse.x, mouse.y, TORCH, 0, Math.PI*2);
-      ctx.fillStyle = g;
-      ctx.fill();
+      ctx.fillStyle = g; ctx.fill();
     }
 
     particles.forEach(p => p.update());
 
-    // Lines
     for (let i = 0; i < particles.length; i++) {
       const p1 = particles[i];
       for (let j = i+1; j < particles.length; j++) {
         const p2 = particles[j];
         const dx = p1.x - p2.x, dy = p1.y - p2.y;
-        const d  = Math.sqrt(dx*dx + dy*dy);
+        const d = Math.sqrt(dx*dx + dy*dy);
         if (d < 100 && mouse.x !== null) {
           const mx = (p1.x+p2.x)/2, my = (p1.y+p2.y)/2;
           const dm = Math.sqrt((mouse.x-mx)**2 + (mouse.y-my)**2);
@@ -360,18 +346,15 @@ themeBtn.addEventListener('click', () => {
             const op = Math.pow(1-dm/TORCH, 1.8) * (1-d/100) * 0.42;
             if (op > 0.01) {
               ctx.beginPath();
-              ctx.moveTo(p1.x, p1.y);
-              ctx.lineTo(p2.x, p2.y);
+              ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
               ctx.strokeStyle = dark ? `rgba(255,255,255,${op})` : `${p1.col}${op})`;
-              ctx.lineWidth   = 0.75;
-              ctx.stroke();
+              ctx.lineWidth = 0.75; ctx.stroke();
             }
           }
         }
       }
     }
 
-    // Dots
     particles.forEach(p => {
       if (mouse.x === null) return;
       const dx = mouse.x - p.x, dy = mouse.y - p.y;
@@ -382,11 +365,11 @@ themeBtn.addEventListener('click', () => {
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
           if (dark) {
-            ctx.fillStyle  = `rgba(255,255,255,${op})`;
+            ctx.fillStyle = `rgba(255,255,255,${op})`;
             ctx.shadowBlur = 3;
             ctx.shadowColor = 'rgba(255,255,255,0.45)';
           } else {
-            ctx.fillStyle  = `${p.col}${op})`;
+            ctx.fillStyle = `${p.col}${op})`;
             ctx.shadowBlur = 0;
           }
           ctx.fill();
@@ -402,9 +385,7 @@ themeBtn.addEventListener('click', () => {
   window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
   document.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
 
-  resize();
-  init();
-  draw();
+  resize(); init(); draw();
 })();
 </script>
 </body>
