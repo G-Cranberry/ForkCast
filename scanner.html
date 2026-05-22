@@ -1,704 +1,452 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Forkcast – Scan Your Fridge</title>
-  <link rel="stylesheet" href="style.css?v=1.1" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <style>
-    .scanner-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1.5rem;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    .video-wrapper {
-      position: relative;
-      width: 100%;
-      max-width: 640px;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      background: #000;
-      aspect-ratio: 4/3;
-    }
-    #camera-feed {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      /* Flip video horizontally so it acts like a mirror (better UX for front cameras, but we prefer environment/back camera) */
-    }
-    #detection-canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-    }
-    .detected-list {
-      width: 100%;
-      max-width: 640px;
-      background: white;
-      border-radius: 20px;
-      padding: 1.5rem;
-      box-shadow: 0 4px 20px rgba(255, 143, 163, 0.1);
-      display: none;
-    }
-    .detected-item {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 0.8rem;
-      border-bottom: 1px solid #f0f0f0;
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .detected-item:last-child {
-      border-bottom: none;
-    }
-    .detected-item input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
-      accent-color: var(--accent);
-      cursor: pointer;
-    }
-    .item-label {
-      text-transform: capitalize;
-    }
-    .action-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(5px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-    }
-    .action-modal-content {
-      background: white;
-      padding: 2.5rem;
-      border-radius: 24px;
-      text-align: center;
-      max-width: 400px;
-      width: 90%;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-    }
-    .action-modal h3 {
-      font-size: 1.8rem;
-      margin-bottom: 1.5rem;
-      font-weight: 900;
-    }
-    .action-btn {
-      display: block;
-      width: 100%;
-      margin-bottom: 1rem;
-      padding: 1rem;
-      border-radius: 30px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      border: 2px solid var(--accent);
-      background: white;
-      color: var(--accent);
-      transition: all 0.2s;
-    }
-    .action-btn:hover {
-      background: var(--accent);
-      color: white;
-    }
-    .api-attribution {
-      position: fixed;
-      bottom: 15px;
-      right: 20px;
-      font-size: 0.75rem;
-      color: var(--muted);
-      background: rgba(255,255,255,0.9);
-      padding: 0.5rem 0.8rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      z-index: 100;
-      backdrop-filter: blur(4px);
-    }
-    .api-attribution a {
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 700;
-    }
-    
-    body.dark-mode .detected-list,
-    body.dark-mode .action-modal-content {
-      background: var(--bg2);
-      color: var(--text);
-    }
-    body.dark-mode .detected-item {
-      border-color: var(--border);
-    }
-    body.dark-mode .api-attribution {
-      background: rgba(0,0,0,0.8);
-      color: #aaa;
-    }
-    
-    /* Modern inputs & dropdowns */
-    .item-name-input {
-      background: #fafafa;
-      color: var(--text);
-      border: 1.5px solid var(--border);
-      transition: all 0.2s;
-      outline: none;
-    }
-    .item-name-input:focus {
-      border-color: var(--accent);
-      background: #fff;
-      box-shadow: 0 0 0 3px rgba(255, 143, 163, 0.15);
-    }
-    .item-category-select {
-      background: #fafafa;
-      color: var(--text);
-      border: 1.5px solid var(--border);
-      cursor: pointer;
-      transition: all 0.2s;
-      outline: none;
-    }
-    .item-category-select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(255, 143, 163, 0.15);
-    }
-    
-    body.dark-mode .item-name-input,
-    body.dark-mode .item-category-select,
-    body.dark-mode #inline-correction-input,
-    body.dark-mode #inline-correction-category {
-      background: #2b2b2b;
-      color: #fff;
-      border-color: #444;
-    }
-    body.dark-mode .item-name-input:focus,
-    body.dark-mode #inline-correction-input:focus {
-      border-color: var(--accent);
-      background: #333;
-    }
-
-    /* Simulator Panel styles */
-    .simulator-panel {
-      margin-top: 1.5rem;
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
-      padding: 1rem;
-      width: 100%;
-      max-width: 500px;
-      text-align: left;
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-      animation: fadeIn 0.3s ease;
-      transition: all 0.3s ease;
-    }
-    body.dark-mode .simulator-panel {
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    .simulator-panel-header {
-      font-weight: 700;
-      color: #ff6b6b;
-      margin-bottom: 0.75rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.95rem;
-    }
-    .simulator-panel-body {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    .simulator-panel-body label {
-      font-size: 0.8rem;
-      color: var(--muted);
-    }
-    .simulator-select {
-      background: rgba(255, 255, 255, 0.8);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.6rem;
-      border-radius: 8px;
-      outline: none;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    body.dark-mode .simulator-select {
-      background: rgba(0, 0, 0, 0.4);
-      border-color: #444;
-      color: #fff;
-    }
-    .simulator-select:focus {
-      border-color: #ff6b6b;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Forkcast – Scan Your Fridge</title>
+<link rel="stylesheet" href="style.css?v=1.1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+<style>
+.scanner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  background: #000;
+  aspect-ratio: 4/3;
+}
+#camera-feed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+#detection-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.detected-list {
+  width: 100%;
+  max-width: 640px;
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(255, 143, 163, 0.1);
+  display: none;
+}
+.detected-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.detected-item:last-child { border-bottom: none; }
+.detected-item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.item-label { text-transform: capitalize; }
+.action-modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(5px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+.action-modal-content {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 24px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+.action-modal h3 {
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  font-weight: 900;
+}
+.action-btn {
+  display: block;
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 2px solid var(--accent);
+  background: white;
+  color: var(--accent);
+  transition: all 0.2s;
+}
+.action-btn:hover { background: var(--accent); color: white; }
+.api-attribution {
+  position: fixed;
+  bottom: 15px; right: 20px;
+  font-size: 0.75rem;
+  color: var(--muted);
+  background: rgba(255,255,255,0.9);
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  z-index: 100;
+  backdrop-filter: blur(4px);
+}
+.api-attribution a { color: var(--accent); text-decoration: none; font-weight: 700; }
+body.dark-mode .detected-list,
+body.dark-mode .action-modal-content { background: var(--bg2); color: var(--text); }
+body.dark-mode .detected-item { border-color: var(--border); }
+body.dark-mode .api-attribution { background: rgba(0,0,0,0.8); color: #aaa; }
+</style>
 </head>
 <body>
-  <div class="app-wrap">
-    <!-- SIDEBAR -->
-    <aside class="sidebar" id="sidebar">
-      <nav class="sidebar-nav">
-        <!-- Dynamically filled by main.js -->
-      </nav>
-    </aside>
+<div class="app-wrap">
 
-    <!-- MAIN -->
-    <main class="main">
-      <header class="topbar">
-        <div class="topbar-left">
-          <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
-            <span></span><span></span><span></span>
-          </button>
-          <div class="topbar-logo">
-            <span class="logo-text"><span class="fork">Fork</span><span class="cast">Cast</span></span>
-          </div>
-        </div>
-        <div class="topbar-right"></div>
-      </header>
+  <aside class="sidebar" id="sidebar">
+    <nav class="sidebar-nav"></nav>
+  </aside>
 
-      <div class="page-content fade-up">
-        <div class="scanner-container">
-          <h1 class="sec-title" style="margin:0; text-align:center;">Scan Your Fridge 📷</h1>
-          <p style="color:var(--muted); text-align:center; max-width:500px; margin-top:-0.5rem;">
-            Point your camera at your ingredients. We'll automatically identify them and help you plan your next meal!
-          </p>
-
-          <div class="video-wrapper">
-            <video id="camera-feed" autoplay playsinline muted></video>
-            <canvas id="detection-canvas"></canvas>
-            
-            <div id="loading-model" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:white; font-weight:bold; background:rgba(0,0,0,0.6); padding:1rem; border-radius:12px;">
-              Initializing Camera...
-            </div>
-          </div>
-
-          <!-- Simulator Control Panel -->
-          <div id="simulator-control-panel" class="simulator-panel" style="display: none;">
-            <div class="simulator-panel-header">
-              <span class="simulator-icon">⚡</span>
-              <span>Ultralytics YOLOv8 Mock Simulator Settings</span>
-            </div>
-            <div class="simulator-panel-body">
-              <label for="simulator-select">Choose what item should be detected next:</label>
-              <select id="simulator-select" class="simulator-select">
-                <option value="auto" selected>🎨 Auto Color Detection</option>
-                <optgroup label="Fruits">
-                  <option value="lychee">Lychee</option>
-                  <option value="apple">Apple</option>
-                  <option value="banana">Banana</option>
-                  <option value="mango">Mango</option>
-                  <option value="orange">Orange</option>
-                  <option value="grapes">Grapes</option>
-                  <option value="strawberry">Strawberry</option>
-                </optgroup>
-                <optgroup label="Vegetables">
-                  <option value="capsicum">Capsicum / Bell Pepper</option>
-                  <option value="tomato">Tomato</option>
-                  <option value="broccoli">Broccoli</option>
-                  <option value="carrot">Carrot</option>
-                  <option value="spinach">Spinach</option>
-                  <option value="onion">Onion</option>
-                  <option value="potato">Potato</option>
-                </optgroup>
-                <optgroup label="Dairy & Milk">
-                  <option value="paneer">Paneer</option>
-                  <option value="milk">Milk</option>
-                  <option value="cheese">Cheese</option>
-                  <option value="butter">Butter</option>
-                </optgroup>
-              </select>
-            </div>
-          </div>
-
-          <button id="scan-btn" class="btn-primary" style="padding: 1rem 3rem; font-size: 1.2rem; display:none;">
-            🔍 Analyze Current Frame
-          </button>
-
-          <!-- Detected Items List -->
-          <div class="detected-list" id="detected-list-container">
-            <h3 style="margin-top:0; font-weight:800; border-bottom:2px solid var(--border); padding-bottom:0.5rem;">Detected Ingredients</h3>
-            <div id="items-list">
-              <!-- Checkboxes will be injected here -->
-            </div>
-            <button id="confirm-btn" class="btn-primary" style="width:100%; margin-top:1.5rem;">Confirm Selection</button>
-          </div>
-
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-logo">
+          <span class="logo-text"><span class="fork">Fork</span><span class="cast">Cast</span></span>
         </div>
       </div>
-    </main>
-  </div>
+      <div class="topbar-right"></div>
+    </header>
 
-  <!-- Action Modal -->
-  <div class="action-modal" id="action-modal">
-    <div class="action-modal-content">
-      <h3>What's next?</h3>
-      <p style="color:var(--muted); margin-bottom: 1.5rem;">You've selected <span id="item-count" style="font-weight:800; color:var(--text);">0</span> items.</p>
-      
-      <button class="action-btn" id="btn-add-inventory">📥 Add to Fridge Inventory</button>
-      <button class="action-btn" id="btn-create-recipe">🍳 Create a Recipe</button>
-      <button class="action-btn" id="btn-do-both" style="background:var(--accent); color:white; border-color:var(--accent);">✨ Do Both</button>
-      
-      <button class="action-btn" style="border:none; color:var(--muted); margin-top:1rem;" onclick="document.getElementById('action-modal').style.display='none'">Cancel</button>
-    </div>
-  </div>
+    <div class="page-content fade-up">
+      <div class="scanner-container">
+        <h1 class="sec-title" style="margin:0; text-align:center;">Scan Your Fridge 📷</h1>
+        <p style="color:var(--muted); text-align:center; max-width:500px; margin-top:-0.5rem;">
+          Point your camera at your ingredients. We'll automatically identify them and help you plan your next meal!
+        </p>
 
-  <!-- Confirmation Modal for Low Confidence Predictions -->
-  <div class="action-modal" id="confirmation-modal">
-    <div class="action-modal-content">
-      <h3>Help Us Verify 🧐</h3>
-      <p style="color:var(--muted); margin-bottom: 1.5rem;">
-        We are a bit unsure about one item. <br><br>
-        <strong style="color:var(--text); font-size:1.3rem;">Is this a <span id="conf-item-name" style="color:var(--accent2); text-transform: capitalize;">[item]</span>?</strong>
-        <br><span id="conf-item-percentage" style="font-size:0.9rem; color:var(--muted); font-weight: 600;">(Confidence: 65%)</span>
-      </p>
-      
-      <button class="action-btn" id="btn-conf-yes" style="background:var(--accent); color:white; border-color:var(--accent);">Yes, that's correct</button>
-      <button class="action-btn" id="btn-conf-no">No, remove it</button>
-      <button class="action-btn" id="btn-conf-correct">✏️ Correct it...</button>
-      
-      <!-- Inline correction input (hidden initially) -->
-      <div id="inline-correction-wrap" style="display:none; margin-top:1.2rem; border-top:1.5px solid var(--border); padding-top:1.2rem; text-align: left;">
-        <label style="font-weight:700; font-size:0.9rem; color:var(--text); margin-bottom:0.4rem; display:block;">Item Name</label>
-        <input type="text" id="inline-correction-input" placeholder="Enter correct item name..." style="width:100%; padding:0.7rem; border-radius:10px; border:1px solid var(--border); margin-bottom:0.8rem; outline:none; font-family:'Inter',sans-serif;" />
-        <label style="font-weight:700; font-size:0.9rem; color:var(--text); margin-bottom:0.4rem; display:block;">Category</label>
-        <select id="inline-correction-category" style="width:100%; padding:0.7rem; border-radius:10px; border:1px solid var(--border); margin-bottom:1.2rem; outline:none; font-family:'Inter',sans-serif; background:white;">
-          <option value="veggies">🥦 Veggies</option>
-          <option value="fruits">🍎 Fruits</option>
-          <option value="grains">🌾 Grains</option>
-          <option value="pulses">🫘 Pulses</option>
-          <option value="milk">🥛 Dairy / Milk</option>
-        </select>
-        <button class="btn-primary" id="btn-submit-correction" style="width:100%; font-size:0.95rem; padding:0.75rem; border-radius:30px;">Save Correction</button>
+        <div class="video-wrapper">
+          <video id="camera-feed" autoplay playsinline muted></video>
+          <canvas id="detection-canvas"></canvas>
+          <div id="loading-model" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:white; font-weight:bold; background:rgba(0,0,0,0.6); padding:1rem; border-radius:12px; text-align:center; width:80%;">
+            Loading AI Model...
+          </div>
+        </div>
+
+        <button id="scan-btn" class="btn-primary" style="padding:1rem 3rem; font-size:1.2rem; display:none;">
+          🔍 Analyze Current Frame
+        </button>
+
+        <div class="detected-list" id="detected-list-container">
+          <h3 style="margin-top:0; font-weight:800; border-bottom:2px solid var(--border); padding-bottom:0.5rem;">Detected Ingredients</h3>
+          <div id="items-list"></div>
+          <button id="confirm-btn" class="btn-primary" style="width:100%; margin-top:1.5rem;">Confirm Selection</button>
+        </div>
       </div>
     </div>
+  </main>
+</div>
+
+<div class="action-modal" id="action-modal">
+  <div class="action-modal-content">
+    <h3>What's next?</h3>
+    <p style="color:var(--muted); margin-bottom:1.5rem;">You've selected <span id="item-count" style="font-weight:800; color:var(--text);">0</span> items.</p>
+    <button class="action-btn" id="btn-add-inventory">📥 Add to Fridge Inventory</button>
+    <button class="action-btn" id="btn-create-recipe">🍳 Create a Recipe</button>
+    <button class="action-btn" id="btn-do-both" style="background:var(--accent); color:white; border-color:var(--accent);">✨ Do Both</button>
+    <button class="action-btn" style="border:none; color:var(--muted); margin-top:1rem;" onclick="document.getElementById('action-modal').style.display='none'">Cancel</button>
   </div>
+</div>
 
+<div class="api-attribution">
+  Powered by <a href="https://www.tensorflow.org/js" target="_blank">TensorFlow.js</a> &amp;
+  <a href="https://github.com/tensorflow/tfjs-models/tree/master/coco-ssd" target="_blank">COCO-SSD</a>
+</div>
 
-  <!-- Attribution Section -->
-  <div class="api-attribution">
-    Powered by <a href="https://www.ultralytics.com/" target="_blank">Ultralytics YOLOv8 API</a>
-  </div>
+<script src="main.js"></script>
+<script>
+// ─── DOM REFS ───────────────────────────────────────────────
+const video        = document.getElementById('camera-feed');
+const canvas       = document.getElementById('detection-canvas');
+const ctx          = canvas.getContext('2d');
+const scanBtn      = document.getElementById('scan-btn');
+const loadingBadge = document.getElementById('loading-model');
+const listContainer= document.getElementById('detected-list-container');
+const itemsList    = document.getElementById('items-list');
+const confirmBtn   = document.getElementById('confirm-btn');
+const actionModal  = document.getElementById('action-modal');
 
-  <script src="main.js"></script>
-  <script>
-    const video = document.getElementById('camera-feed');
-    const canvas = document.getElementById('detection-canvas');
-    const ctx = canvas.getContext('2d');
-    const scanBtn = document.getElementById('scan-btn');
-    const loadingBadge = document.getElementById('loading-model');
-    const listContainer = document.getElementById('detected-list-container');
-    const itemsList = document.getElementById('items-list');
-    const confirmBtn = document.getElementById('confirm-btn');
-    const actionModal = document.getElementById('action-modal');
+let model = null;
+let stream = null;
+let selectedItems = [];
 
-    // New confirmation modal elements
-    const confirmationModal = document.getElementById('confirmation-modal');
-    const confItemName = document.getElementById('conf-item-name');
-    const confItemPercentage = document.getElementById('conf-item-percentage');
-    const btnConfYes = document.getElementById('btn-conf-yes');
-    const btnConfNo = document.getElementById('btn-conf-no');
-    const btnConfCorrect = document.getElementById('btn-conf-correct');
-    const inlineCorrectionWrap = document.getElementById('inline-correction-wrap');
-    const inlineCorrectionInput = document.getElementById('inline-correction-input');
-    const inlineCorrectionCategory = document.getElementById('inline-correction-category');
-    const btnSubmitCorrection = document.getElementById('btn-submit-correction');
+// ─── GROCERY VOCABULARY ─────────────────────────────────────
+const GROCERY_VOCAB = {
+  fruits:  ['apple','banana','mango','orange','grapes','watermelon','strawberry','pomegranate','pineapple','papaya','kiwi','lemon','lime','pear','peach','plum','cherry','blueberry','raspberry','coconut'],
+  veggies: ['tomato','potato','onion','garlic','ginger','carrot','broccoli','cauliflower','spinach','cabbage','capsicum','cucumber','zucchini','peas','corn','beetroot','mushroom','radish','eggplant','lettuce','celery','asparagus','pumpkin','sweet potato'],
+  grains:  ['rice','wheat','bread','pasta','oats','flour','noodles','quinoa','barley','maize','roti','cereal','poha','semolina','cornflakes'],
+  pulses:  ['lentils','dal','chickpeas','rajma','moong','kidney beans','black beans','soybeans','chana','urad dal','masoor dal'],
+  milk:    ['milk','curd','yogurt','cheese','butter','paneer','cream','ghee','ice cream','condensed milk']
+};
 
-    let model = null;
-    let stream = null;
-    let selectedItems = [];
+// ─── BLOCKLIST ───────────────────────────────────────────────
+const BLOCKLIST_PAIRS = {
+  'hot dog':   { correct: 'cucumber' },
+  'banana':    { correct: 'zucchini' },
+  'apple':     { correct: 'tomato' },
+  'pizza':     { correct: 'flatbread' },
+  'donut':     { correct: 'bagel' },
+  'cake':      { correct: 'bread loaf' },
+  'sandwich':  { correct: 'bread' },
+  'cup':       { correct: 'milk' },
+  'bowl':      { correct: 'cereal' },
+  'bottle':    { correct: 'cooking oil' },
+};
 
-    function getAverageColor(ctx, width, height) {
-      const sampleSize = 100;
-      const startX = Math.floor((width - sampleSize) / 2);
-      const startY = Math.floor((height - sampleSize) / 2);
-      try {
-        const imgData = ctx.getImageData(startX, startY, sampleSize, sampleSize);
-        const data = imgData.data;
-        let rSum = 0, gSum = 0, bSum = 0;
-        const count = data.length / 4;
-        for (let i = 0; i < data.length; i += 4) {
-          rSum += data[i];
-          gSum += data[i+1];
-          bSum += data[i+2];
-        }
-        return {
-          r: Math.round(rSum / count),
-          g: Math.round(gSum / count),
-          b: Math.round(bSum / count)
-        };
-      } catch (e) {
-        console.error("Failed to get image data for average color:", e);
-        return { r: 127, g: 127, b: 127 };
-      }
-    }
+function getCategory(itemName) {
+  const lower = itemName.toLowerCase();
+  for (const [cat, items] of Object.entries(GROCERY_VOCAB)) {
+    if (items.some(i => lower.includes(i) || i.includes(lower))) return cat;
+  }
+  return 'veggies';
+}
 
-    // ============================================================
-    // GROCERY VOCABULARY — curated items per category
-    // ============================================================
-    const GROCERY_VOCAB = {
-      fruits:  ['apple','banana','mango','orange','grapes','watermelon','strawberry','pomegranate','pineapple','papaya','kiwi','lemon','lime','pear','peach','plum','cherry','blueberry','raspberry','coconut','lychee'],
-      veggies: ['tomato','potato','onion','garlic','ginger','carrot','broccoli','cauliflower','spinach','cabbage','capsicum','cucumber','zucchini','peas','corn','beetroot','mushroom','radish','eggplant','lettuce','celery','asparagus','pumpkin','sweet potato'],
-      grains:  ['rice','wheat','bread','pasta','oats','flour','noodles','quinoa','barley','maize','roti','cereal','poha','semolina','cornflakes'],
-      pulses:  ['lentils','dal','chickpeas','rajma','moong','kidney beans','black beans','soybeans','chana','urad dal','masoor dal'],
-      milk:    ['milk','curd','yogurt','cheese','butter','paneer','cream','ghee','ice cream','condensed milk']
-    };
+// ─── STEP 1: COLOR SAMPLING ──────────────────────────────────
+function sampleFrameColors() {
+  const w = canvas.width, h = canvas.height;
+  if (!w || !h) return [];
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const data = imageData.data;
+  const buckets = { red:0, green:0, yellow:0, orange:0, white:0, purple:0, brown:0 };
+  let total = 0;
+  for (let i = 0; i < data.length; i += 4 * 20) {
+    const r = data[i], g = data[i+1], b = data[i+2];
+    if (r>160 && g<80  && b<80)            buckets.red++;
+    else if (g>120 && r<120 && b<100)      buckets.green++;
+    else if (r>180 && g>160 && b<80)       buckets.yellow++;
+    else if (r>180 && g>100 && b<60)       buckets.orange++;
+    else if (r>200 && g>200 && b>200)      buckets.white++;
+    else if (r>100 && b>100 && g<80)       buckets.purple++;
+    else if (r>120 && g>80  && b<60 && r>g) buckets.brown++;
+    total++;
+  }
+  return Object.entries(buckets)
+    .filter(([, count]) => total > 0 && count/total > 0.04)
+    .map(([color]) => color);
+}
 
-    // Build a flat list for quick lookup
-    const ALL_GROCERY_ITEMS = [];
-    Object.entries(GROCERY_VOCAB).forEach(([cat, items]) => {
-      items.forEach(item => ALL_GROCERY_ITEMS.push({ name: item, category: cat }));
-    });
-    function getCategory(itemName) {
-      const lower = itemName.toLowerCase();
-      for (const [cat, items] of Object.entries(GROCERY_VOCAB)) {
-        if (items.some(i => lower.includes(i) || i.includes(lower))) return cat;
-      }
-      return 'veggies';
-    }
+// ─── STEP 2: GROCERY CONTEXT ─────────────────────────────────
+function applyGroceryContext(colors) {
+  const c = new Set();
+  if (colors.includes('red'))    { c.add('tomato'); c.add('capsicum'); c.add('apple'); }
+  if (colors.includes('green'))  { c.add('cucumber'); c.add('broccoli'); c.add('spinach'); c.add('zucchini'); c.add('cabbage'); }
+  if (colors.includes('yellow')) { c.add('banana'); c.add('corn'); c.add('lemon'); }
+  if (colors.includes('orange')) { c.add('orange'); c.add('carrot'); c.add('sweet potato'); }
+  if (colors.includes('white'))  { c.add('onion'); c.add('garlic'); c.add('cauliflower'); c.add('milk'); c.add('paneer'); }
+  if (colors.includes('purple')) { c.add('eggplant'); c.add('grapes'); c.add('beetroot'); }
+  if (colors.includes('brown'))  { c.add('potato'); c.add('ginger'); c.add('mushroom'); c.add('bread'); }
+  c.add('onion'); c.add('potato'); // staples always
+  return Array.from(c);
+}
 
-    async function checkSimulatorActive() {
-      try {
-        const pingUrl = window.location.port === '3000' ? '/api/scan-food' : 'http://localhost:3000/api/scan-food';
-        const response = await fetch(pingUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ping: true })
-        });
-        const data = await response.json();
-        if (data && data.simulator) {
-          document.getElementById('simulator-control-panel').style.display = 'block';
-        }
-      } catch (e) {
-        console.warn("Failed to check simulator status:", e);
-      }
-    }
+// ─── STEP 3: BLOCKLIST CORRECTION ────────────────────────────
+function correctLabel(label) {
+  const lower = label.toLowerCase();
+  return BLOCKLIST_PAIRS[lower] ? BLOCKLIST_PAIRS[lower].correct : label;
+}
 
-    async function initCamera() {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        video.srcObject = stream;
-        video.onloadedmetadata = () => {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          loadingBadge.style.display = 'none';
-          scanBtn.style.display = 'inline-block';
-          
-          // Check if simulator is active
-          checkSimulatorActive();
-        };
-      } catch (err) {
-        console.error('Camera error', err);
-        loadingBadge.innerText = 'Camera access denied. Please enable permissions.';
-      }
-    }
-
-    async function analyzeFrame() {
-      if (!video.videoWidth) return;
-
-      scanBtn.innerText = 'Scanning...';
-      scanBtn.disabled = true;
-
-      canvas.width = video.videoWidth;
+// ─── CAMERA ──────────────────────────────────────────────────
+async function initCamera() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    video.srcObject = stream;
+    video.onloadedmetadata = () => {
+      canvas.width  = video.videoWidth;
       canvas.height = video.videoHeight;
+    };
+  } catch (err) {
+    console.error('Camera error:', err);
+    loadingBadge.innerText = '❌ Camera access denied. Please allow camera permissions and refresh.';
+    loadingBadge.style.display = 'block';
+  }
+}
 
-      // Draw current frame onto canvas
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+// ─── MODEL LOAD ───────────────────────────────────────────────
+async function loadModel() {
+  loadingBadge.style.display = 'block';
+  loadingBadge.innerText = 'Loading AI Model...';
+  try {
+    model = await cocoSsd.load();
+    console.log('COCO-SSD loaded');
+  } catch (e) {
+    console.warn('COCO-SSD failed, using color engine only:', e);
+    model = null;
+  }
+  loadingBadge.style.display = 'none';
+  scanBtn.style.display = 'inline-block';
+}
 
-      // Convert captured frame to high quality JPEG format
-      const imageBase64 = canvas.toDataURL('image/jpeg', 0.85);
-      
-      // Calculate average color in the center of the screen
-      const avgColor = getAverageColor(ctx, canvas.width, canvas.height);
+// ─── SCAN ─────────────────────────────────────────────────────
+async function analyzeFrame() {
+  if (!video.videoWidth) {
+    alert('Camera not ready. Please wait a moment and try again.');
+    return;
+  }
 
-      const targetUrl = window.location.port === '3000' ? '/api/scan-food' : 'http://localhost:3000/api/scan-food';
+  scanBtn.innerText = 'Scanning...';
+  scanBtn.disabled = true;
 
-      // Get user override from mock panel if visible
-      const simSelect = document.getElementById('simulator-select');
-      const mockItem = simSelect ? simSelect.value : 'auto';
+  canvas.width  = video.videoWidth;
+  canvas.height = video.videoHeight;
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      try {
-        const response = await fetch(targetUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ imageBase64, avgColor, mockItem })
-        });
+  const colors     = sampleFrameColors();
+  const candidates = applyGroceryContext(colors);
+  const detected   = new Set();
 
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          if (errData.error && (errData.error.includes('key') || errData.error.includes('configured') || (errData.details && (errData.details.includes('key') || errData.details.includes('credentials') || errData.details.includes('Unauthorized'))))) {
-            alert('Ultralytics YOLOv8 API Key not configured. Please add a valid YOLOV8_API_KEY inside your .env file and restart the server.');
-            return;
-          }
-          throw new Error('Ultralytics YOLOv8 classification request failed');
-        }
-
-        const result = await response.json();
-        
-        // Pick only the item with the highest probability score from predictions
-        if (result && result.predictions && result.predictions.length > 0) {
-          result.predictions.sort((a, b) => b.confidence - a.confidence);
-          const topItem = result.predictions[0];
-
-          if (topItem && topItem.confidence >= 0.30 && topItem.name) {
-            populateList([topItem.name]);
-          } else {
-            alert('Item not recognised. Please hold it closer and try again.');
-            listContainer.style.display = 'none';
-            itemsList.innerHTML = '';
-          }
-        } else {
-          alert('Item not recognised. Please hold it closer and try again.');
-          listContainer.style.display = 'none';
-          itemsList.innerHTML = '';
-        }
-      } catch (err) {
-        console.error('Ultralytics YOLOv8 scan error:', err);
-        alert('Item not recognised. Please hold it closer and try again.');
-        listContainer.style.display = 'none';
-        itemsList.innerHTML = '';
-      } finally {
-        scanBtn.innerText = '🔍 Analyze Current Frame';
-        scanBtn.disabled = false;
-      }
-    }
-
-    let currentChecklistData = [];
-
-    // Revamped populateList: creates editable fields and category selectors
-    function populateList(items) {
-      itemsList.innerHTML = '';
-      currentChecklistData = items.map(item => ({
-        name: item,
-        category: getCategory(item)
-      }));
-
-      currentChecklistData.forEach((item, index) => {
-        const div = document.createElement('div');
-        div.className = 'detected-item';
-        div.style = 'display:flex; align-items:center; gap:0.8rem; width:100%; flex-wrap:wrap; padding:0.8rem 0; border-bottom:1px solid var(--border);';
-        div.innerHTML = `
-          <input type="checkbox" class="item-checkbox" data-index="${index}" checked style="width:20px; height:20px; accent-color:var(--accent); cursor:pointer;">
-          
-          <input type="text" class="item-name-input" data-index="${index}" value="${item.name}" style="flex:1; min-width:140px; padding:0.5rem; border-radius:8px; font-size:1rem; font-weight:700;">
-          
-          <select class="item-category-select" data-index="${index}" style="padding:0.5rem; border-radius:8px; font-size:0.9rem; font-family:'Inter', sans-serif;">
-            <option value="veggies" ${item.category === 'veggies' ? 'selected' : ''}>🥦 Veggies</option>
-            <option value="fruits" ${item.category === 'fruits' ? 'selected' : ''}>🍎 Fruits</option>
-            <option value="grains" ${item.category === 'grains' ? 'selected' : ''}>🌾 Grains</option>
-            <option value="pulses" ${item.category === 'pulses' ? 'selected' : ''}>🫘 Pulses</option>
-            <option value="milk" ${item.category === 'milk' ? 'selected' : ''}>🥛 Dairy / Milk</option>
-          </select>
-        `;
-        itemsList.appendChild(div);
-      });
-
-      listContainer.style.display = 'block';
-      listContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    confirmBtn.addEventListener('click', () => {
-      const rows = itemsList.querySelectorAll('.detected-item');
-      selectedItems = [];
-
-      rows.forEach(row => {
-        const checkbox = row.querySelector('.item-checkbox');
-        if (checkbox && checkbox.checked) {
-          const nameInput = row.querySelector('.item-name-input');
-          const categorySelect = row.querySelector('.item-category-select');
-          
-          if (nameInput && categorySelect) {
-            const finalName = nameInput.value.trim();
-            const finalCat = categorySelect.value;
-            if (finalName) {
-              selectedItems.push({
-                name: finalName,
-                category: finalCat
-              });
-            }
-          }
+  if (model) {
+    try {
+      const predictions = await model.detect(video);
+      predictions.forEach(p => {
+        if (p.score > 0.35) {
+          const label = correctLabel(p.class);
+          const [x, y, w, h] = p.bbox;
+          ctx.strokeStyle = '#ff8fa3';
+          ctx.lineWidth   = 3;
+          ctx.strokeRect(x, y, w, h);
+          const text = `${label} (${Math.round(p.score * 100)}%)`;
+          ctx.fillStyle = '#ff8fa3';
+          ctx.fillRect(x, y - 26, ctx.measureText(text).width + 16, 26);
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 14px Inter';
+          ctx.fillText(text, x + 8, y - 7);
+          detected.add(label);
         }
       });
-      
-      if (selectedItems.length === 0) {
-        alert("Please select at least one item.");
-        return;
-      }
-      
-      document.getElementById('item-count').innerText = selectedItems.length;
-      actionModal.style.display = 'flex';
-    });
+    } catch (e) {
+      console.warn('Detection failed, color engine fallback:', e);
+    }
+  }
 
-    // Handlers for modal actions
-    function addToInventory() {
-      let invData = JSON.parse(localStorage.getItem('forkcast_inventory_v1') || '{}');
-      if (!invData.fruits)  invData.fruits  = [];
-      if (!invData.veggies) invData.veggies = [];
-      if (!invData.grains)  invData.grains  = [];
-      if (!invData.pulses)  invData.pulses  = [];
-      if (!invData.milk)    invData.milk    = [];
-      if (!invData.other)   invData.other   = [];
+  candidates.forEach(c => detected.add(c));
+  const finalList = Array.from(detected).slice(0, 6);
 
-      selectedItems.forEach(item => {
-        const cat = item.category;
-        const targetCat = invData[cat] ? cat : 'other';
-        // Prevent exact duplicates
-        if (!invData[targetCat].some(i => i.text.toLowerCase() === item.name.toLowerCase())) {
-          invData[targetCat].push({
-            id: `${targetCat}_${Date.now()}_${Math.random().toString(36).slice(2)}`,
-            text: item.name,
-            weight: '1x',
-            done: false
-          });
-        }
+  scanBtn.innerText = '🔍 Analyze Current Frame';
+  scanBtn.disabled  = false;
+
+  if (finalList.length > 0) {
+    populateList(finalList);
+  } else {
+    alert('No items detected. Try better lighting or move closer.');
+  }
+}
+
+// ─── POPULATE LIST ────────────────────────────────────────────
+function populateList(items) {
+  itemsList.innerHTML = '';
+  items.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'detected-item';
+    div.innerHTML = `
+      <input type="checkbox" id="item-${i}" value="${item}" checked>
+      <label class="item-label" for="item-${i}">
+        ${item}
+        <span style="color:var(--muted); font-size:0.85rem; font-weight:normal;">(${getCategory(item)})</span>
+      </label>`;
+    itemsList.appendChild(div);
+  });
+  listContainer.style.display = 'block';
+  listContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ─── CONFIRM ──────────────────────────────────────────────────
+confirmBtn.addEventListener('click', () => {
+  const checked = itemsList.querySelectorAll('input[type="checkbox"]:checked');
+  selectedItems = Array.from(checked).map(cb => cb.value);
+  if (selectedItems.length === 0) {
+    alert('Please select at least one item.');
+    return;
+  }
+  document.getElementById('item-count').innerText = selectedItems.length;
+  actionModal.style.display = 'flex';
+});
+
+// ─── INVENTORY ────────────────────────────────────────────────
+function addToInventory() {
+  let inv = JSON.parse(localStorage.getItem('forkcast_inventory_v1') || '{}');
+  ['fruits','veggies','grains','pulses','milk','other'].forEach(cat => {
+    if (!inv[cat]) inv[cat] = [];
+  });
+  selectedItems.forEach(item => {
+    const cat = inv[getCategory(item)] !== undefined ? getCategory(item) : 'other';
+    if (!inv[cat].some(i => i.text.toLowerCase() === item.toLowerCase())) {
+      inv[cat].push({
+        id: `${cat}_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+        text: item,
+        weight: '1x',
+        done: false
       });
-
-      localStorage.setItem('forkcast_inventory_v1', JSON.stringify(invData));
     }
+  });
+  localStorage.setItem('forkcast_inventory_v1', JSON.stringify(inv));
+}
 
-    function createRecipe() {
-      // Redirect to smart search page with query
-      const query = selectedItems.map(item => item.name).join(',');
-      window.location.href = `search.html?q=${encodeURIComponent(query)}`;
-    }
+// ─── RECIPE REDIRECT ──────────────────────────────────────────
+function goToRecipe() {
+  window.location.href = `search.html?q=${encodeURIComponent(selectedItems.join(','))}`;
+}
 
-    document.getElementById('btn-add-inventory').addEventListener('click', () => {
-      addToInventory();
-      alert(`Successfully added ${selectedItems.length} items to your Fridge Inventory!`);
-      actionModal.style.display = 'none';
-      listContainer.style.display = 'none';
-      ctx.clearRect(0, 0, canvas.width, canvas.height); // clear boxes
-    });
+// ─── MODAL BUTTONS ────────────────────────────────────────────
+document.getElementById('btn-add-inventory').addEventListener('click', () => {
+  addToInventory();
+  alert(`✅ Added ${selectedItems.length} items to your Fridge Inventory!`);
+  actionModal.style.display   = 'none';
+  listContainer.style.display = 'none';
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+});
 
-    document.getElementById('btn-create-recipe').addEventListener('click', () => {
-      createRecipe();
-    });
+document.getElementById('btn-create-recipe').addEventListener('click', goToRecipe);
 
-    document.getElementById('btn-do-both').addEventListener('click', () => {
-      addToInventory();
-      createRecipe();
-    });
+document.getElementById('btn-do-both').addEventListener('click', () => {
+  addToInventory();
+  goToRecipe();
+});
 
-    scanBtn.addEventListener('click', analyzeFrame);
+scanBtn.addEventListener('click', analyzeFrame);
 
-    // Boot up
-    initCamera();
+// ─── BOOT ─────────────────────────────────────────────────────
+initCamera();
+loadModel();
+</script>
 
-  </script>
 </body>
 </html>
