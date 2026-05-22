@@ -209,37 +209,16 @@ const Auth = {
   setUser(data) {
     localStorage.setItem('forkcast_user', JSON.stringify(data));
   },
-
-  // ✅ FIX: Firebase signOut bhi karo, sirf localStorage clear nahi
-  async logout() {
+  logout() {
     localStorage.removeItem('forkcast_user');
-    localStorage.setItem('just_logged_out', '1'); // flag set karo
-
-    // Firebase signOut
-    try {
-      const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-      const { getAuth, signOut } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-
-      const firebaseConfig = {
-        apiKey: "AIzaSyBBY2W3EH1Ng5WeBOvTKLxFfJ0aa6UmE",
-        authDomain: "forkcast-61470.firebaseapp.com",
-        projectId: "forkcast-61470",
-        storageBucket: "forkcast-61470.firebasestorage.app",
-        messagingSenderId: "283261245477",
-        appId: "1:283261245477:web:d0190096a832f3b14ab5a3"
-      };
-
-      const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      await signOut(auth);
-    } catch (e) {
-      console.warn('Firebase signOut error:', e);
+    if (window._auth && window._signOut) {
+      window._signOut(window._auth).finally(() => {
+        window.location.replace('login.html?logout=1');
+      });
+    } else {
+      window.location.replace('login.html?logout=1');
     }
-
-    // ✅ FIX: replace() use karo taaki back button se wapis na aye
-    window.location.replace('login.html?logout=1');
   },
-
   isLoggedIn() {
     return !!localStorage.getItem('forkcast_user');
   }
