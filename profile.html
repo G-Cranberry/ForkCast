@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Your Profile – Forkcast</title>
   <link rel="stylesheet" href="style.css?v=1.1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
   <style>
     @keyframes bunnyPop {
       from { transform: scale(0.5); opacity: 0; }
-      to   { transform: scale(1); opacity: 1; }
+      to   { transform: scale(1);   opacity: 1; }
     }
     @keyframes bunnyBounce {
       from { transform: translateY(0px); }
@@ -36,20 +37,32 @@
     #bunny-box.bunny-show {
       animation: bunnyPop 0.5s cubic-bezier(0.19,1,0.22,1) forwards;
     }
-    #bunny-svg { animation: bunnyBounce 1s ease-in-out infinite alternate; }
+    #bunny-svg {
+      animation: bunnyBounce 1s ease-in-out infinite alternate;
+    }
     .bunny-close-btn {
       background: linear-gradient(135deg, #ff8fa3, #f472b6);
-      color: white; border: none; border-radius: 50px;
-      padding: 0.6rem 2rem; font-size: 0.95rem; font-weight: 700;
-      cursor: pointer; box-shadow: 0 4px 20px rgba(255,143,163,0.4);
-      transition: transform 0.2s; margin-top: 1rem;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 0.6rem 2rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(255,143,163,0.4);
+      transition: transform 0.2s;
+      margin-top: 1rem;
     }
-    .bunny-close-btn:hover { transform: scale(1.05); }
+    .bunny-close-btn:hover {
+      transform: scale(1.05);
+    }
   </style>
 </head>
 <body>
-<canvas id="particles-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none;"></canvas>
+
+<div class="profile-bg"></div>
 <div class="app-wrap">
+
   <aside class="sidebar" id="sidebar">
     <nav class="sidebar-nav"></nav>
   </aside>
@@ -71,18 +84,18 @@
     <div class="page-content fade-up">
       <div class="profile-page-content">
 
-        <div class="profile-header glass">
+        <div class="profile-header">
           <div class="profile-avatar-wrap">
-            <img src="" alt="Avatar" class="profile-avatar" id="user-avatar" />
+            <img src="" alt="User Avatar" class="profile-avatar" id="user-avatar" />
             <div class="avatar-edit" title="Change Photo">📷</div>
             <input type="file" id="avatar-upload" style="display:none" accept="image/*" />
           </div>
           <div class="profile-info">
             <h1 id="user-name">User Name</h1>
             <p id="user-email">user@example.com</p>
-            <div style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;">
-              <span class="tag" style="background:rgba(96,165,250,0.15);color:#60a5fa;">Pro Member</span>
-              <span class="tag" id="user-joined" style="background:rgba(255,143,163,0.15);color:#ff8fa3;">Joined</span>
+            <div style="display:flex; gap:0.5rem;">
+              <span class="tag" style="background:#e0f2fe; color:#0369a1;">Pro Member</span>
+              <span class="tag" id="user-joined">Joined Oct 2023</span>
             </div>
           </div>
         </div>
@@ -103,17 +116,24 @@
         </div>
 
         <div class="dashboard-grid">
+
           <section id="profile-dynamic-section">
             <h2 class="sec-title" id="dynamic-title">Recent Activity 🕒</h2>
             <div id="dynamic-content-grid">
               <div class="meal-history">
                 <div class="history-item">
                   <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100" class="history-img" alt="Meal" />
-                  <div class="history-info"><h4>Grilled Salmon Salad</h4><span>Cooked 2 days ago</span></div>
+                  <div class="history-info">
+                    <h4>Grilled Salmon Salad</h4>
+                    <span>Cooked 2 days ago</span>
+                  </div>
                 </div>
                 <div class="history-item">
                   <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100" class="history-img" alt="Meal" />
-                  <div class="history-info"><h4>Avocado Toast</h4><span>Breakfast · Yesterday</span></div>
+                  <div class="history-info">
+                    <h4>Avocado Toast</h4>
+                    <span>Breakfast · Yesterday</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -122,24 +142,24 @@
           <aside>
             <h2 class="sec-title">Feedback 💬</h2>
             <div class="glass" style="padding:1.5rem;">
-              <div class="input-group">
+              <div class="input-group" style="margin-bottom:1rem;">
                 <label>Your Name</label>
-                <input type="text" id="fb-name" placeholder="Your name" />
+                <input type="text" id="fb-name" class="add-input" style="width:100%; min-width:unset;" placeholder="Your name" />
               </div>
-              <div class="input-group">
+              <div class="input-group" style="margin-bottom:1rem;">
                 <label>Your Email</label>
-                <input type="email" id="fb-email" placeholder="your@email.com" />
+                <input type="email" id="fb-email" class="add-input" style="width:100%; min-width:unset;" placeholder="your@email.com" />
               </div>
-              <div class="input-group">
+              <div class="input-group" style="margin-bottom:1rem;">
                 <label>Message</label>
-                <textarea id="fb-message" rows="4" style="resize:vertical;" placeholder="Tell us what you think..."></textarea>
+                <textarea id="fb-message" class="add-input" rows="4" style="width:100%; min-width:unset; resize:vertical;" placeholder="Tell us what you think..."></textarea>
               </div>
-              <button class="btn-primary" id="send-feedback-btn" style="width:100%;margin-top:0.5rem;">Send Feedback 🚀</button>
-              <p id="fb-status" style="text-align:center;margin-top:0.75rem;font-size:0.9rem;"></p>
+              <button class="btn-primary" id="send-feedback-btn" style="width:100%; margin-top:0.5rem;">Send Feedback 🚀</button>
+              <p id="fb-status" style="text-align:center; margin-top:0.75rem; font-size:0.9rem;"></p>
             </div>
           </aside>
-        </div>
 
+        </div>
       </div>
     </div>
   </main>
@@ -168,8 +188,8 @@
       <ellipse cx="88" cy="100" rx="8" ry="14" fill="#ffb6c1" transform="rotate(20,88,100)"/>
       <circle cx="60" cy="134" r="8" fill="white"/>
     </svg>
-    <h2 style="margin:1.2rem 0 0.5rem;color:#d6336c;font-size:1.5rem;font-family:'Inter',sans-serif;font-weight:800;">Thank You! 🎀</h2>
-    <p style="color:#e0608a;font-size:0.95rem;font-family:'Inter',sans-serif;margin-bottom:1rem;">Your feedback means the world to us!</p>
+    <h2 style="margin:1.2rem 0 0.5rem; color:#d6336c; font-size:1.5rem; font-family:'Inter',sans-serif; font-weight:800;">Thank You! 🎀</h2>
+    <p style="color:#e0608a; font-size:0.95rem; font-family:'Inter',sans-serif; margin-bottom:1rem;">Your feedback means the world to us!</p>
     <button class="bunny-close-btn" onclick="closeBunny()">Aww, Thanks! 🐰</button>
   </div>
 </div>
@@ -177,36 +197,48 @@
 <script src="recipes-data.js"></script>
 <script src="main.js"></script>
 <script>
-  if (!Auth.isLoggedIn()) { window.location.href = 'login.html'; }
+  if (!Auth.isLoggedIn()) {
+    window.location.href = 'login.html';
+  }
 
   const user = Auth.getUser();
   if (user) {
-    document.getElementById('user-name').innerText = user.name || 'User';
-    document.getElementById('user-email').innerText = user.email || '';
-    document.getElementById('user-avatar').src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400';
-    document.getElementById('user-joined').innerText = `Joined ${user.joined || ''}`;
+    document.getElementById('user-name').innerText = user.name;
+    document.getElementById('user-email').innerText = user.email;
+    document.getElementById('user-avatar').src = user.avatar;
+    document.getElementById('user-joined').innerText = `Joined ${user.joined}`;
   }
 
   function showToast(msg) {
-    let t = document.querySelector('.toast');
-    if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
-    t.innerText = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
+    let toast = document.querySelector('.toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'toast';
+      document.body.appendChild(toast);
+    }
+    toast.innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
   }
 
-  document.querySelector('.avatar-edit').addEventListener('click', () => document.getElementById('avatar-upload').click());
-  document.getElementById('avatar-upload').addEventListener('change', (e) => {
+  const avatarEditBtn = document.querySelector('.avatar-edit');
+  const avatarInput = document.getElementById('avatar-upload');
+  avatarEditBtn.addEventListener('click', () => avatarInput.click());
+  avatarInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      user.avatar = ev.target.result;
-      Auth.setUser(user);
-      document.getElementById('user-avatar').src = ev.target.result;
-      showToast('Avatar updated! ✨');
-    };
-    reader.readAsDataURL(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target.result;
+        user.avatar = dataUrl;
+        Auth.setUser(user);
+        document.getElementById('user-avatar').src = dataUrl;
+        showToast('Avatar updated! ✨');
+        const topAvatar = document.querySelector('.profile-icon-link img');
+        if (topAvatar) topAvatar.src = dataUrl;
+      };
+      reader.readAsDataURL(file);
+    }
   });
 
   function showBunny() {
@@ -232,19 +264,26 @@
     const email = document.getElementById('fb-email').value.trim();
     const message = document.getElementById('fb-message').value.trim();
     const status = document.getElementById('fb-status');
+
     if (!name || !email || !message) {
       status.innerText = 'Please fill all fields!';
       status.style.color = '#f87171';
       return;
     }
+
     status.innerText = 'Sending...';
     status.style.color = 'var(--accent)';
+
     try {
       const res = await fetch('https://formspree.io/f/mnjrdqpv', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({ name, email, message })
       });
+
       if (res.ok) {
         status.innerText = '✅ Feedback sent!';
         status.style.color = '#4ade80';
@@ -253,53 +292,69 @@
         document.getElementById('fb-email').value = '';
         document.getElementById('fb-message').value = '';
       } else {
-        status.innerText = '❌ Something went wrong.';
+        status.innerText = '❌ Something went wrong. Try again.';
         status.style.color = '#f87171';
       }
     } catch (err) {
-      status.innerText = '❌ Network error.';
+      status.innerText = '❌ Network error. Try again.';
       status.style.color = '#f87171';
     }
   });
 
   function updateStats() {
-    const favs    = JSON.parse(localStorage.getItem('forkcast_favorites') || '[]');
-    const cooked  = JSON.parse(localStorage.getItem('forkcast_cooked') || '[]');
+    const favs = JSON.parse(localStorage.getItem('forkcast_favorites') || '[]');
+    const cooked = JSON.parse(localStorage.getItem('forkcast_cooked') || '[]');
     const planner = JSON.parse(localStorage.getItem('forkcast_planner') || '{}');
-    document.getElementById('count-favs').innerText   = favs.length;
+    document.getElementById('count-favs').innerText = favs.length;
     document.getElementById('count-cooked').innerText = cooked.length;
-    document.getElementById('count-plans').innerText  = Object.keys(planner).length > 0 ? 1 : 0;
+    document.getElementById('count-plans').innerText = Object.keys(planner).length > 0 ? 1 : 0;
   }
 
   function showSection(type) {
-    const titleEl   = document.getElementById('dynamic-title');
+    const titleEl = document.getElementById('dynamic-title');
     const contentEl = document.getElementById('dynamic-content-grid');
     contentEl.innerHTML = '';
+
     if (type === 'favorites') {
-      titleEl.innerText = 'Your Favorites ❤️';
-      const ids = JSON.parse(localStorage.getItem('forkcast_favorites') || '[]');
-      const recipes = ALL_RECIPES.filter(r => ids.includes(r.id));
-      if (!recipes.length) {
-        contentEl.innerHTML = '<div class="glass" style="padding:2rem;text-align:center;"><p style="color:var(--muted)">No favorites yet!</p></div>';
+      titleEl.innerText = "Your Favorites ❤️";
+      const favIds = JSON.parse(localStorage.getItem('forkcast_favorites') || '[]');
+      const favoriteRecipes = ALL_RECIPES.filter(r => favIds.includes(r.id));
+      if (favoriteRecipes.length === 0) {
+        contentEl.innerHTML = '<div class="glass" style="padding:3rem;text-align:center;"><p style="color:var(--muted);">No favorites yet. Save some recipes! 🍽️</p></div>';
       } else {
         contentEl.innerHTML = '<div class="recipe-grid" id="fav-grid"></div>';
-        renderRecipeCards(recipes, 'fav-grid');
+        renderRecipeCards(favoriteRecipes, 'fav-grid');
       }
     } else if (type === 'cooked') {
       titleEl.innerText = "Recipes You've Cooked 🍳";
-      const ids = JSON.parse(localStorage.getItem('forkcast_cooked') || '[]');
-      const recipes = ALL_RECIPES.filter(r => ids.includes(r.id));
-      if (!recipes.length) {
-        contentEl.innerHTML = '<div class="glass" style="padding:2rem;text-align:center;"><p style="color:var(--muted)">No cooked recipes yet!</p></div>';
+      const cookedIds = JSON.parse(localStorage.getItem('forkcast_cooked') || '[]');
+      const cookedRecipes = ALL_RECIPES.filter(r => cookedIds.includes(r.id));
+      if (cookedRecipes.length === 0) {
+        contentEl.innerHTML = '<div class="glass" style="padding:3rem;text-align:center;"><p style="color:var(--muted);">No cooked recipes yet! 😋</p></div>';
       } else {
         contentEl.innerHTML = '<div class="recipe-grid" id="cooked-grid"></div>';
-        renderRecipeCards(recipes, 'cooked-grid');
+        renderRecipeCards(cookedRecipes, 'cooked-grid');
       }
+    } else {
+      titleEl.innerText = "Recent Activity 🕒";
+      contentEl.innerHTML = `
+        <div class="meal-history">
+          <div class="history-item">
+            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100" class="history-img" alt="Meal" />
+            <div class="history-info"><h4>Grilled Salmon Salad</h4><span>Cooked 2 days ago</span></div>
+          </div>
+          <div class="history-item">
+            <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100" class="history-img" alt="Meal" />
+            <div class="history-info"><h4>Avocado Toast</h4><span>Breakfast · Yesterday</span></div>
+          </div>
+        </div>`;
     }
-    document.getElementById('profile-dynamic-section').scrollIntoView({ behavior: 'smooth' });
+
+    document.getElementById('profile-dynamic-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   updateStats();
 </script>
+
 </body>
 </html>
