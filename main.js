@@ -6,7 +6,6 @@
 (function() {
   const theme = localStorage.getItem('theme');
   if (theme === 'dark') {
-    document.documentElement.classList.add('dark-mode');
     document.body.classList.add('dark-mode');
   }
 })();
@@ -21,6 +20,7 @@
     appWrap.classList.toggle('menu-active');
   });
 
+  // Close sidebar when clicking outside (optional but good UX)
   document.addEventListener('click', (e) => {
     if (appWrap.classList.contains('menu-active') &&
       !toggle.contains(e.target) &&
@@ -29,6 +29,7 @@
     }
   });
 })();
+
 
 // ---- Rainbow Cursor Trail ----
 (function () {
@@ -97,80 +98,170 @@ updateActiveLink();
   btn.addEventListener('click', doSearch);
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
 
-  window.startVoiceSearch = function (inputElement, onSearchCallback) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) { alert("Voice recognition is not supported in this browser."); return; }
+  // Advanced Search Actions
+  const voiceBtn = document.getElementById('voice-search-btn');
+  const scanBtn = document.getElementById('scan-search-btn');
 
+  // Voice Search Reusable Function
+  // Voice Search Reusable Function (Improved Google-like Version)
+  window.startVoiceSearch = function (inputElement, onSearchCallback) {
+
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Voice recognition is not supported in this browser.");
+      return;
+    }
+
+    // Create Voice Modal if it doesn't exist
     let voiceOverlay = document.getElementById('voice-modal');
+
     if (!voiceOverlay) {
       voiceOverlay = document.createElement('div');
       voiceOverlay.id = 'voice-modal';
       voiceOverlay.className = 'voice-modal-overlay';
+
       voiceOverlay.innerHTML = `
-        <div class="voice-modal-content">
-          <span class="voice-close" id="voice-close-btn">&times;</span>
-          <div class="voice-mic-icon">🎤</div>
-          <div class="voice-status" id="voice-status-text">Listening...</div>
-          <div class="voice-text" id="voice-text-output">Speak now...</div>
-        </div>`;
+      <div class="voice-modal-content">
+        <span class="voice-close" id="voice-close-btn">&times;</span>
+        <div class="voice-mic-icon">🎤</div>
+        <div class="voice-status" id="voice-status-text">
+          Listening...
+        </div>
+        <div class="voice-text" id="voice-text-output">
+          Speak now...
+        </div>
+      </div>
+    `;
+
       document.body.appendChild(voiceOverlay);
     }
 
     const voiceTextOutput = document.getElementById('voice-text-output');
     const voiceStatus = document.getElementById('voice-status-text');
     const voiceCloseBtn = document.getElementById('voice-close-btn');
+
     voiceOverlay.classList.add('active');
+
     voiceTextOutput.textContent = "Speak now...";
     voiceStatus.textContent = "Listening...";
 
     const recognition = new SpeechRecognition();
+
+    // Better recognition settings
     recognition.lang = 'en-US';
-    recognition.continuous = false;
+    recognition.continuous = false; // Set to false so it stops after one phrase
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
     let finalTranscript = '';
 
+    recognition.onstart = () => {
+      voiceStatus.textContent = "Listening...";
+    };
+
     recognition.onresult = (event) => {
+
       let interimTranscript = '';
+
       for (let i = event.resultIndex; i < event.results.length; i++) {
+
         const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) { finalTranscript += transcript + ' '; }
-        else { interimTranscript += transcript; }
+
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + ' ';
+        } else {
+          interimTranscript += transcript;
+        }
       }
+
       const combined = finalTranscript + interimTranscript;
+
       voiceTextOutput.textContent = combined;
-      if (inputElement) inputElement.value = combined.trim();
+
+      if (inputElement) {
+        inputElement.value = combined.trim();
+      }
     };
 
     recognition.onerror = (event) => {
-      const msgs = { 'not-allowed': 'Microphone permission denied', 'no-speech': 'No speech detected', 'audio-capture': 'Microphone not found' };
-      voiceStatus.textContent = msgs[event.error] || 'Voice recognition error';
-      setTimeout(() => voiceOverlay.classList.remove('active'), 2000);
+
+      console.error("Speech recognition error:", event.error);
+
+      switch (event.error) {
+
+        case 'not-allowed':
+          voiceStatus.textContent =
+            "Microphone permission denied";
+          break;
+
+        case 'no-speech':
+          voiceStatus.textContent =
+            "No speech detected";
+          break;
+
+        case 'audio-capture':
+          voiceStatus.textContent =
+            "Microphone not found";
+          break;
+
+        default:
+          voiceStatus.textContent =
+            "Voice recognition error";
+      }
+
+      setTimeout(() => {
+        voiceOverlay.classList.remove('active');
+      }, 2000);
     };
 
     recognition.onend = () => {
+
       voiceStatus.textContent = "Processing...";
+
       setTimeout(() => {
+
         voiceOverlay.classList.remove('active');
+
         if (finalTranscript.trim()) {
-          if (inputElement) inputElement.value = finalTranscript.trim();
-          if (onSearchCallback) onSearchCallback();
+
+          if (inputElement) {
+            inputElement.value = finalTranscript.trim();
+          }
+
+          if (onSearchCallback) {
+            onSearchCallback();
+          }
         }
+
       }, 700);
     };
 
-    voiceCloseBtn.onclick = () => { recognition.stop(); voiceOverlay.classList.remove('active'); };
+    voiceCloseBtn.onclick = () => {
+      recognition.stop();
+      voiceOverlay.classList.remove('active');
+    };
+
     recognition.start();
   };
+  if (voiceBtn) {
+    voiceBtn.addEventListener('click', () => {
+      window.startVoiceSearch(input, doSearch);
+    });
+  }
 
-  const voiceBtn = document.getElementById('voice-search-btn');
-  const scanBtn = document.getElementById('scan-search-btn');
-  if (voiceBtn) voiceBtn.addEventListener('click', () => window.startVoiceSearch(input, doSearch));
-  if (scanBtn) scanBtn.addEventListener('click', () => window.location.href = 'scanner.html');
+  if (scanBtn) {
+    scanBtn.addEventListener('click', () => {
+      window.location.href = 'scanner.html';
+    });
+  }
 })();
 
-// ---- Auth ----
+// ---- Authentication Logic (Dummy) ----
+// ============================================================
+// AUTH — Firebase se user data read karta hai
+// ============================================================
 const Auth = {
   getUser() {
     const u = localStorage.getItem('forkcast_user');
@@ -181,24 +272,25 @@ const Auth = {
   },
   logout() {
     localStorage.removeItem('forkcast_user');
-    window.location.href = 'login.html';
+    window.location.href = 'signup.html';
   },
   isLoggedIn() {
     return !!localStorage.getItem('forkcast_user');
   }
 };
 
-const publicPages = ['signup.html', 'login.html', 'index.html', 'mock-google-login.html'];
+// Protected pages — agar login nahi hai toh signup pe bhejo
+const publicPages = ['signup.html', 'login.html', 'index.html'];
 const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 if (!publicPages.includes(currentPage) && !Auth.isLoggedIn()) {
-  window.location.href = 'login.html';
+  window.location.href = 'signup.html';
 }
-
-// ---- Nav & Header ----
+// ---- Dynamic Navigation & Header ----
 function updateNav() {
   const nav = document.querySelector('.sidebar-nav');
   const user = Auth.getUser();
 
+  // 1. Sidebar update
   if (nav) {
     let navHTML = `
       <a href="home.html" class="nav-item"><span class="nav-icon">🏠</span> Home</a>
@@ -208,15 +300,18 @@ function updateNav() {
       <a href="search.html" class="nav-item"><span class="nav-icon">🔍</span> Smart Search</a>
       <a href="scanner.html" class="nav-item"><span class="nav-icon">📷</span> Fridge Scanner</a>
     `;
+
     if (user) {
       navHTML += `<a href="profile.html" class="nav-item"><span class="nav-icon">👤</span> Profile</a>`;
       navHTML += `<a href="#" id="logout-btn" class="nav-item"><span class="nav-icon">🚪</span> Logout</a>`;
     } else {
       navHTML += `<a href="login.html" class="nav-item"><span class="nav-icon">🔑</span> Sign In</a>`;
     }
+
     nav.innerHTML = navHTML;
   }
 
+  // 2. Topbar right update (Profile icon)
   const topbar = document.querySelector('.topbar');
   if (topbar) {
     let topRight = topbar.querySelector('.topbar-right');
@@ -226,63 +321,72 @@ function updateNav() {
       topbar.appendChild(topRight);
     }
 
-    const isDark = document.body.classList.contains('dark-mode');
-    const themeIcon = isDark ? '☀️' : '🌙';
-
     let authHTML = '';
     if (user) {
-      authHTML = `<a href="profile.html" class="profile-icon-link" title="View Profile">
-        <img src="${user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400'}" alt="Profile">
-      </a>`;
+      authHTML = `
+        <a href="profile.html" class="profile-icon-link" title="View Profile">
+          <img src="${user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400'}" alt="Profile">
+        </a>
+      `;
     } else {
-      authHTML = `<a href="login.html" class="btn-primary" style="padding:0.5rem 1.2rem;font-size:0.85rem;">Sign In</a>`;
+      authHTML = `
+        <a href="login.html" class="btn-primary" style="padding: 0.5rem 1.2rem; font-size: 0.85rem;">Sign In</a>
+      `;
     }
 
-    topRight.innerHTML = `
-      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme"
-        style="font-size:1.3rem;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s;flex-shrink:0;">
-        ${themeIcon}
+    const isDark = document.body.classList.contains('dark-mode');
+    const themeToggleHTML = `
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme" style="font-size: 1.5rem; background: none; border: none; cursor: pointer; transition: transform 0.2s;">
+        ${isDark ? '☀️' : '🌙'}
       </button>
-      ${authHTML}
     `;
 
-    document.getElementById('theme-toggle').addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
-      const dark = document.body.classList.contains('dark-mode');
-      localStorage.setItem('theme', dark ? 'dark' : 'light');
-      document.getElementById('theme-toggle').innerHTML = dark ? '☀️' : '🌙';
-    });
+    topRight.innerHTML = themeToggleHTML + authHTML;
+
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const dark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('theme', dark ? 'dark' : 'light');
+        themeToggleBtn.innerHTML = dark ? '☀️' : '🌙';
+        window.dispatchEvent(new Event('themeChanged'));
+      });
+    }
   }
 
   updateActiveLink();
 
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', (e) => { e.preventDefault(); Auth.logout(); });
+    logoutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      Auth.logout();
+    });
   }
 }
 
 document.addEventListener('DOMContentLoaded', updateNav);
 
-// ---- Render Recipe Cards ----
+// ---- Utility: render recipe cards ----
 function renderRecipeCards(recipes, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
   if (!recipes || recipes.length === 0) {
-    container.innerHTML = '<p style="color:var(--muted);grid-column:1/-1;">No recipes found.</p>';
+    container.innerHTML = '<p style="color:var(--muted);grid-column:1/-1;">No recipes found. Try a different ingredient!</p>';
     return;
   }
   container.innerHTML = recipes.map(r => `
     <div class="recipe-card fade-up" onclick="window.location.href='recipe-detail.html?id=${r.id}'">
-      <div style="position:relative;overflow:hidden;">
+      <div style="position:relative; overflow:hidden;">
         <img src="${r.img}" alt="${r.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600'">
       </div>
       <div class="recipe-card-body">
         <h4>${r.title}</h4>
         <p>${r.desc}</p>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
           <span class="tag">${r.category}</span>
-          <span style="font-size:0.75rem;color:var(--muted);font-weight:600;">⏱️ ${r.time}</span>
+          <span style="font-size:0.75rem; color:var(--muted); font-weight:600;">⏱️ ${r.time}</span>
         </div>
       </div>
     </div>
