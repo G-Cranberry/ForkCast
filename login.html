@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="background.css" />
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Sign In – Forkcast</title>
 <link rel="stylesheet" href="style.css?v=1.1" />
-
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup,
@@ -14,30 +12,28 @@
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   const firebaseConfig = {
-  apiKey: "AIzaSyBBV2W3EH1Ng5WeBOvTKLxFfJ0aa6UlPeo",
-  authDomain: "forkcast-61470.firebaseapp.com",
-  projectId: "forkcast-61470",
-  storageBucket: "forkcast-61470.firebasestorage.app",
-  messagingSenderId: "283261245477",
-  appId: "1:283261245477:web:417d0190096a832f3487cc",
-  measurementId: "G-3NNMQLSGDW"
-};
+    apiKey: "AIzaSyBBY2W3EH1Ng5WeBOvTKLxFfJ0aa6UmE",
+    authDomain: "forkcast-61470.firebaseapp.com",
+    projectId: "forkcast-61470",
+    storageBucket: "forkcast-61470.firebasestorage.app",
+    messagingSenderId: "283261245477",
+    appId: "1:283261245477:web:d0190096a832f3b14ab5a3"
+  };
 
-
-  const app      = initializeApp(firebaseConfig);
-  const auth     = getAuth(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
 
-  window._auth            = auth;
-  window._provider        = provider;
+  window._auth = auth;
+  window._provider = provider;
   window._signInWithPopup = signInWithPopup;
-  window._signInEmail     = signInWithEmailAndPassword;
+  window._signInEmail = signInWithEmailAndPassword;
 
   onAuthStateChanged(auth, user => {
     if (user) {
       localStorage.setItem('forkcast_user', JSON.stringify({
-        name:   user.displayName || user.email.split('@')[0],
-        email:  user.email,
+        name: user.displayName || user.email.split('@')[0],
+        email: user.email,
         avatar: user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
         joined: new Date().toLocaleDateString()
       }));
@@ -45,104 +41,117 @@
     }
   });
 </script>
-
 <style>
-body {
-  margin: 0; padding: 0;
-  min-height: 100vh;
-  background: #f7f3ee;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Inter', sans-serif;
-}
-body.dark-mode { background: #0b0b0b; }
+  body {
+    margin: 0; padding: 0;
+    min-height: 100vh;
+    background: #f7f3ee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+  }
+  body.dark-mode { background: #0b0b0b; }
 
-.login-card {
-  background: white;
-  border-radius: 24px;
-  padding: 3rem 2.5rem;
-  width: 90%;
-  max-width: 420px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-  text-align: center;
-}
-body.dark-mode .login-card {
-  background: #1a1a1a;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-}
+  /* Particle canvas stays behind everything */
+  #particles-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+  }
 
-.logo-area { margin-bottom: 2rem; }
-.logo-area .logo-text { font-size: 2rem; font-weight: 900; letter-spacing: -1px; }
-.logo-area .fork { color: #ff8fa3; }
-.logo-area .cast { color: #333; }
-body.dark-mode .logo-area .cast { color: #fff; }
-.logo-area p { color: #888; font-size: 0.9rem; margin-top: 0.3rem; }
+  .login-card {
+    position: relative;
+    z-index: 1;
+    background: white;
+    border-radius: 24px;
+    padding: 3rem 2.5rem;
+    width: 90%;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  body.dark-mode .login-card {
+    background: #1a1a1a;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
 
-.google-btn {
-  display: flex; align-items: center; justify-content: center;
-  gap: 0.75rem; width: 100%; padding: 0.9rem;
-  border: 2px solid #e0e0e0; border-radius: 14px;
-  background: white; font-size: 1rem; font-weight: 600;
-  color: #333; cursor: pointer; transition: all 0.2s;
-  box-sizing: border-box;
-}
-.google-btn:hover { border-color: #ff8fa3; box-shadow: 0 4px 15px rgba(255,143,163,0.15); transform: translateY(-1px); }
-.google-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-.google-btn img { width: 20px; height: 20px; }
-body.dark-mode .google-btn { background: #2a2a2a; border-color: #444; color: #fff; }
+  .logo-area { margin-bottom: 2rem; }
+  .logo-area .logo-text { font-size: 2rem; font-weight: 900; letter-spacing: -1px; }
+  .logo-area .fork { color: #ff8fa3; }
+  .logo-area .cast { color: #333; }
+  body.dark-mode .logo-area .cast { color: #fff; }
+  .logo-area p { color: #888; font-size: 0.9rem; margin-top: 0.3rem; }
 
-.divider { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0; color: #aaa; font-size: 0.82rem; }
-.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e0e0e0; }
-body.dark-mode .divider::before, body.dark-mode .divider::after { background: #333; }
+  .google-btn {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.75rem; width: 100%; padding: 0.9rem;
+    border: 2px solid #e0e0e0; border-radius: 14px;
+    background: white; font-size: 1rem; font-weight: 600;
+    color: #333; cursor: pointer; transition: all 0.2s;
+    box-sizing: border-box;
+  }
+  .google-btn:hover { border-color: #ff8fa3; box-shadow: 0 4px 15px rgba(255,143,163,0.15); transform: translateY(-1px); }
+  .google-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .google-btn img { width: 20px; height: 20px; }
+  body.dark-mode .google-btn { background: #2a2a2a; border-color: #444; color: #fff; }
 
-.form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; text-align: left; }
-.form-group label { font-size: 0.85rem; font-weight: 600; color: #555; }
-body.dark-mode .form-group label { color: #aaa; }
-.form-group input {
-  padding: 0.85rem 1rem; border: 1.5px solid #e0e0e0;
-  border-radius: 12px; font-size: 0.95rem;
-  background: #fafafa; color: #333; outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.form-group input:focus { border-color: #ff8fa3; box-shadow: 0 0 0 3px rgba(255,143,163,0.15); background: white; }
-body.dark-mode .form-group input { background: #2a2a2a; border-color: #444; color: #fff; }
-body.dark-mode .form-group input:focus { background: #333; }
+  .divider { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0; color: #aaa; font-size: 0.82rem; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e0e0e0; }
+  body.dark-mode .divider::before, body.dark-mode .divider::after { background: #333; }
 
-.submit-btn {
-  width: 100%; padding: 0.9rem;
-  background: linear-gradient(135deg, #ff8fa3, #ff5c7c);
-  color: white; border: none; border-radius: 14px;
-  font-size: 1rem; font-weight: 700; cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 15px rgba(255,92,124,0.3);
-  margin-top: 0.5rem;
-}
-.submit-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,92,124,0.4); }
-.submit-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+  .form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; text-align: left; }
+  .form-group label { font-size: 0.85rem; font-weight: 600; color: #555; }
+  body.dark-mode .form-group label { color: #aaa; }
+  .form-group input {
+    padding: 0.85rem 1rem; border: 1.5px solid #e0e0e0;
+    border-radius: 12px; font-size: 0.95rem;
+    background: #fafafa; color: #333; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-group input:focus { border-color: #ff8fa3; box-shadow: 0 0 0 3px rgba(255,143,163,0.15); background: white; }
+  body.dark-mode .form-group input { background: #2a2a2a; border-color: #444; color: #fff; }
+  body.dark-mode .form-group input:focus { background: #333; }
 
-.error-msg { color: #e74c3c; font-size: 0.83rem; text-align: center; min-height: 1.2rem; margin: 0.5rem 0; }
+  .submit-btn {
+    width: 100%; padding: 0.9rem;
+    background: linear-gradient(135deg, #ff8fa3, #ff5c7c);
+    color: white; border: none; border-radius: 14px;
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(255,92,124,0.3);
+    margin-top: 0.5rem;
+  }
+  .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,92,124,0.4); }
+  .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
-.footer-link { margin-top: 1.5rem; color: #888; font-size: 0.88rem; }
-.footer-link a { color: #ff5c7c; font-weight: 600; text-decoration: none; }
-.footer-link a:hover { text-decoration: underline; }
+  .error-msg { color: #e74c3c; font-size: 0.83rem; text-align: center; min-height: 1.2rem; margin: 0.5rem 0; }
 
-.theme-toggle {
-  position: fixed; top: 20px; right: 20px;
-  width: 42px; height: 42px; border-radius: 50%;
-  border: 1.5px solid #e0e0e0; background: white;
-  cursor: pointer; font-size: 1.1rem;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-  transition: transform 0.3s;
-}
-.theme-toggle:hover { transform: rotate(20deg); }
-body.dark-mode .theme-toggle { background: #1a1a1a; border-color: #444; }
+  .footer-link { margin-top: 1.5rem; color: #888; font-size: 0.88rem; }
+  .footer-link a { color: #ff5c7c; font-weight: 600; text-decoration: none; }
+  .footer-link a:hover { text-decoration: underline; }
+
+  .theme-toggle {
+    position: fixed; top: 20px; right: 20px;
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 1.5px solid #e0e0e0; background: white;
+    cursor: pointer; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    transition: transform 0.3s;
+    z-index: 10;
+  }
+  .theme-toggle:hover { transform: rotate(20deg); }
+  body.dark-mode .theme-toggle { background: #1a1a1a; border-color: #444; }
 </style>
 </head>
 <body>
 
-  <canvas id="particles-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none;"></canvas>
+<!-- Particle Background Canvas -->
+<canvas id="particles-canvas"></canvas>
+
 <button class="theme-toggle" id="themeBtn">🌙</button>
 
 <div class="login-card">
@@ -170,7 +179,6 @@ body.dark-mode .theme-toggle { background: #1a1a1a; border-color: #444; }
   </div>
 
   <p class="error-msg" id="errMsg"></p>
-
   <button class="submit-btn" id="submitBtn" type="button">Sign In</button>
 
   <div class="footer-link">
@@ -179,7 +187,7 @@ body.dark-mode .theme-toggle { background: #1a1a1a; border-color: #444; }
 </div>
 
 <script>
-// Google Login
+// ===== GOOGLE LOGIN =====
 document.getElementById('googleBtn').addEventListener('click', async () => {
   const btn = document.getElementById('googleBtn');
   const err = document.getElementById('errMsg');
@@ -192,25 +200,23 @@ document.getElementById('googleBtn').addEventListener('click', async () => {
     btn.disabled = false;
     btn.innerHTML = '<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google"> Continue with Google';
     const msgs = {
-      'auth/popup-closed-by-user':   'Popup band ho gayi, dobara try karo.',
-      'auth/popup-blocked':          'Browser ne popup block kiya. Allow karo.',
+      'auth/popup-closed-by-user': 'Popup band ho gayi, dobara try karo.',
+      'auth/popup-blocked': 'Browser ne popup block kiya. Allow karo.',
       'auth/network-request-failed': 'Internet check karo.',
     };
     err.textContent = msgs[e.code] || e.message;
   }
 });
 
-// Email Sign In
+// ===== EMAIL SIGN IN =====
 document.getElementById('submitBtn').addEventListener('click', async () => {
   const email = document.getElementById('email').value.trim();
-  const pass  = document.getElementById('password').value;
-  const err   = document.getElementById('errMsg');
-  const btn   = document.getElementById('submitBtn');
+  const pass = document.getElementById('password').value;
+  const err = document.getElementById('errMsg');
+  const btn = document.getElementById('submitBtn');
   err.textContent = '';
-
   if (!email) { err.textContent = 'Email daalo.'; return; }
   if (!pass)  { err.textContent = 'Password daalo.'; return; }
-
   try {
     btn.disabled = true;
     btn.textContent = 'Signing in...';
@@ -219,17 +225,17 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
     btn.disabled = false;
     btn.textContent = 'Sign In';
     const msgs = {
-      'auth/user-not-found':    'Ye email registered nahi hai. Pehle sign up karo.',
-      'auth/wrong-password':    'Password galat hai.',
-      'auth/invalid-email':     'Valid email daalo.',
-      'auth/invalid-credential':'Email ya password galat hai.',
-      'auth/too-many-requests': 'Zyada attempts. Thodi der baad try karo.',
+      'auth/user-not-found':     'Ye email registered nahi hai. Pehle sign up karo.',
+      'auth/wrong-password':     'Password galat hai.',
+      'auth/invalid-email':      'Valid email daalo.',
+      'auth/invalid-credential': 'Email ya password galat hai.',
+      'auth/too-many-requests':  'Zyada attempts. Thodi der baad try karo.',
     };
     err.textContent = msgs[e.code] || e.message;
   }
 });
 
-// Theme
+// ===== THEME TOGGLE =====
 const themeBtn = document.getElementById('themeBtn');
 if (localStorage.getItem('theme') === 'dark') {
   document.body.classList.add('dark-mode');
@@ -241,7 +247,147 @@ themeBtn.addEventListener('click', () => {
   themeBtn.textContent = isDark ? '☀️' : '🌙';
   localStorage.setItem('theme', isDark ? 'dark' : 'light');
 });
+
+// ===== PARTICLE BACKGROUND =====
+const canvas = document.getElementById('particles-canvas');
+const ctx = canvas.getContext('2d');
+let particlesArray = [];
+let oldWidth = 0, oldHeight = 0;
+const torchRadius = 220;
+const attractionForce = 1.35;
+const springStiffness = 0.038;
+const mouse = { x: null, y: null, radius: 175 };
+
+function resizeCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  const w = window.innerWidth, h = window.innerHeight;
+  if (particlesArray.length > 0 && oldWidth > 0 && oldHeight > 0) {
+    particlesArray.forEach(p => {
+      p.x = (p.x / oldWidth) * w;   p.y = (p.y / oldHeight) * h;
+      p.baseX = (p.baseX / oldWidth) * w; p.baseY = (p.baseY / oldHeight) * h;
+    });
+  }
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
+  ctx.scale(dpr, dpr);
+  oldWidth = w; oldHeight = h;
+}
+window.addEventListener('resize', resizeCanvas);
+
+class Particle {
+  constructor(x, y) {
+    this.x = x; this.y = y; this.baseX = x; this.baseY = y;
+    this.vx = 0; this.vy = 0;
+    this.size = Math.random() * 2.8 + 2.2;
+    this.hue = Math.random() * 360;
+    this.saturation = Math.floor(Math.random() * 30 + 55);
+    this.lightness  = Math.floor(Math.random() * 18 + 72);
+    this.lightColor = `hsla(${this.hue}, ${this.saturation}%, ${this.lightness}%, `;
+  }
+  update() {
+    let ax = 0, ay = 0;
+    if (mouse.x !== null) {
+      const dx = mouse.x - this.x, dy = mouse.y - this.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < mouse.radius) {
+        const f = (mouse.radius - dist) / mouse.radius;
+        ax += (dx / dist) * f * attractionForce;
+        ay += (dy / dist) * f * attractionForce;
+      }
+    }
+    ax += (this.baseX - this.x) * springStiffness;
+    ay += (this.baseY - this.y) * springStiffness;
+    this.vx = (this.vx + ax) * 0.82;
+    this.vy = (this.vy + ay) * 0.82;
+    this.x += this.vx; this.y += this.vy;
+  }
+}
+
+function initParticles() {
+  particlesArray = [];
+  const w = window.innerWidth, h = window.innerHeight;
+  for (let i = 0; i < 160; i++)
+    particlesArray.push(new Particle(Math.random()*w, Math.random()*h));
+}
+
+function drawAndSimulate() {
+  ctx.clearRect(0, 0, oldWidth, oldHeight);
+  const isDark = document.body.classList.contains('dark-mode');
+
+  // Torch glow under cursor
+  if (mouse.x !== null) {
+    const g = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, torchRadius);
+    if (isDark) {
+      g.addColorStop(0,   'rgba(255,255,255,0.12)');
+      g.addColorStop(0.5, 'rgba(255,255,255,0.04)');
+      g.addColorStop(1,   'rgba(255,255,255,0)');
+    } else {
+      g.addColorStop(0,   'rgba(0,0,0,0.06)');
+      g.addColorStop(0.5, 'rgba(0,0,0,0.02)');
+      g.addColorStop(1,   'rgba(0,0,0,0)');
+    }
+    ctx.beginPath();
+    ctx.arc(mouse.x, mouse.y, torchRadius, 0, Math.PI*2);
+    ctx.fillStyle = g;
+    ctx.fill();
+  }
+
+  particlesArray.forEach(p => p.update());
+
+  // Connecting lines inside torch radius
+  for (let i = 0; i < particlesArray.length; i++) {
+    const p1 = particlesArray[i];
+    for (let j = i+1; j < particlesArray.length; j++) {
+      const p2 = particlesArray[j];
+      const dx = p1.x - p2.x, dy = p1.y - p2.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 100 && mouse.x !== null) {
+        const mx = (p1.x+p2.x)/2, my = (p1.y+p2.y)/2;
+        const dm = Math.sqrt((mouse.x-mx)**2 + (mouse.y-my)**2);
+        if (dm < torchRadius) {
+          const tf = Math.pow(1 - dm/torchRadius, 1.8);
+          const op = tf * (1 - dist/100) * 0.42;
+          if (op > 0.01) {
+            ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = isDark ? `rgba(255,255,255,${op})` : `${p1.lightColor}${op})`;
+            ctx.lineWidth = 0.75; ctx.stroke();
+          }
+        }
+      }
+    }
+  }
+
+  // Dots inside torch radius
+  particlesArray.forEach(p => {
+    if (mouse.x !== null) {
+      const dx = mouse.x - p.x, dy = mouse.y - p.y;
+      const dm = Math.sqrt(dx*dx + dy*dy);
+      if (dm < torchRadius) {
+        const op = Math.pow(1 - dm/torchRadius, 1.4);
+        if (op > 0.01) {
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+          if (isDark) {
+            ctx.fillStyle = `rgba(255,255,255,${op})`;
+            ctx.shadowBlur = 3; ctx.shadowColor = 'rgba(255,255,255,0.45)';
+          } else {
+            ctx.fillStyle = `${p.lightColor}${op})`;
+            ctx.shadowBlur = 0;
+          }
+          ctx.fill();
+        }
+      }
+    }
+  });
+
+  requestAnimationFrame(drawAndSimulate);
+}
+
+window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+document.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
+
+resizeCanvas();
+initParticles();
+drawAndSimulate();
 </script>
-<script src="background.js"></script>
 </body>
 </html>
